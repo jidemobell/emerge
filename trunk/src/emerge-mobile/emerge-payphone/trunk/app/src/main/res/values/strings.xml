@@ -1,0 +1,49 @@
+<resources>
+    <string name="app_name">TeloPay</string>
+    <string name="text_username">Username</string>
+    <string name="text_password">Password</string>
+    <string name="btn_text_login">Login</string>
+    <string name="text_config_item">Configuration Item</string>
+    <string name="text_config_screen_tile">Settings</string>
+    <string name="btn_text_proceed">Proceed</string>
+    <string name="text_security_screen_title">Security PIN</string>
+    <string name="text_home_screen_title">Home</string>
+    <string name="text_make_call">Make Call</string>
+    <string name="text_payphone_activity">Payphone Activity</string>
+    <string name="text_configuration">Configuration</string>
+    <string name="text_called_number">Called Number</string>
+    <string name="text_call_establish_screen_header">Call establishment</string>
+    <string name="text_call_setup_screen_header">Call setup</string>
+    <string name="text_spendable_amount">Spendable Amount</string>
+    <string name="text_call_setup_text">Please Enter Spendable Amount</string>
+    <string name="text_call_in_progress">Call in progress to:</string>
+    <string name="text_call_time_remaining">Time Remaining:</string>
+    <string name="text_amount_charge">Amount Charged:</string>
+    <string name="text_balance_remaining">Balance Remaining:</string>
+    <string name="text_call_duration">Call duration :</string>
+    <string name="text_terminate_call">Terminate call</string>
+    <string name="text_make_another_call">Make Another Call</string>
+    <string name="text_terminate_session">Terminate Session</string>
+    <string name="text_call_in_progress_screen_title">Call in progress</string>
+    <string name="text_establish_call_text">Please insert the number to dial to</string>
+    <string name="text_prompt_pin">Define the Security PIN</string>
+    <string name="text_security_prompt_screen">PIN will be requested whenever a protected feature is accessed</string>
+
+    <string-array name="configuration_options">
+        <item>Operator Detail</item>
+        <item>Payphone Detail</item>
+        <item>Allow anonymous calls</item>
+        <item>Language</item>
+        <item>Change Security PIN</item>
+    </string-array>
+
+    <string name="text_payphone_activity_title">Activity</string>
+    <string name="text_make_another_call_prompt">You have %1$s Kz left on your current session. Do you want to make another call?</string>
+    <string name="splash_screen_logo">Splash screen logo</string>
+    <string name="call_icon">Call Icon</string>
+    <string name="start_call">Start Call</string>
+    <string name="end_session">End Session</string>
+    <string name="new_call">New Call</string>
+    <string name="call_summary">Call Summary</string>
+
+</resources>

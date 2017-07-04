@@ -1,0 +1,735 @@
+# Example YAML to get you started quickly.
+# Be aware that YAML has indentation based scoping.
+# Code completion support is available so start typing for available options.
+swagger: '2.0'
+
+# This is your document metadata
+info:
+  version: '1.0.0'
+  title: Business Support System API
+  description: Specification of REST API for Business Support System
+  contact:
+    name: Emerge team
+    email: jorge.patrao@smarttank-solutions.com
+    url: https://www.linkedin.com/company/smart-tank
+host: bss.emerge.com
+basePath: /bss/v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+
+definitions:
+  customer:
+    type: object
+    required:
+      - name
+      - fiscal_number
+      - country
+    properties:
+      status:
+        type: string
+      name:
+        type: string
+      fiscal_number:
+        type: string
+      tax_exemption_certificates:
+        type: string
+      country:
+        type: string
+      website:
+        type: string
+      private_notes:
+        type: string
+      public_notes:
+        type: string
+      customer_address_id:
+        type: number
+        format: int32
+      customer_contact_id:
+        type: number
+        format: int32
+      tags:
+        type: string
+
+  customer_address:
+    type: object
+    required:
+      - address_name
+      - address
+    properties:
+      address_name:
+        type: string
+      address:
+        type: string
+      fax_number:
+        type: string
+      telephone_number:
+        type: string
+      notify_by_sms:
+        type: string
+      notify_by_email:
+        type: string
+      email:
+        type: string
+      customer_address_id:
+          type: number
+          format: int32
+  contact:
+    type: object
+    properties:
+      customer_contact_id:
+        type: string
+      contact_type:
+        type: string
+      contact_name:
+        type: string
+      contact_email:
+        type: string
+      contact_phone:
+        type: string
+      contact_fax:
+        type: string
+
+  errorModel:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+
+
+# Describe your paths here
+paths:
+  /bss/provision/customer:
+    post:
+      description: create a new customer on the bss
+      operationId: createCustomer
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: createCustomer
+          in: body
+          description: Customer information
+          schema:
+            $ref: "#/definitions/customer"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New customer created
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+    get:
+      description: Returns a list of customers that match the search criteria. If multiple criteria are specified, the result will be a list of all customers that match all the criteria (logical AND)
+      operationId: searchCustomers
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: name
+          in: query
+          description: Customer name
+          type: string
+        - name: customerId
+          in: query
+          description: Customer ID
+          type: string
+        - name: status
+          in: query
+          description: Customer's status
+          type: string
+        - name: fiscalNumber
+          in: query
+          description: fiscal number
+          type: string
+        - name: Invoice Number
+          in: query
+          description: customer's invoice number
+          type: string
+        - name: Telephone Number
+          in: query
+          description: customer's telephone number
+          type: string
+        - name: email
+          in: query
+          description: Customer's email
+          type: string
+        - name: username
+          in: query
+          description: Customer's username
+          type: string
+        - name: Provisioned Equipment
+          in: query
+          description: Customer tags
+          type: string
+        - name: tags
+          in: query
+          description: Customer tags
+          type: string
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of customers that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/customer'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /bss/provision/customer/{customerId}:
+    delete:
+      description: delete a customer on the bss
+      operationId: deleteCustomer
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: userHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: sessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customerId
+          in: path
+          type: string
+          description: Customer id to delete
+          required: true
+        - name: customer
+          in: body
+          description: Customer information
+          schema:
+            $ref: "#/definitions/contact"
+          required: true
+
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: customer deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+    put:
+      description: edit an existing customer on the bss
+      operationId: editCustomer
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: userHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: sessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customerId
+          in: path
+          type: string
+          description: Customer id to edit/update
+          required: true
+        - name: customer
+          in: body
+          description: Customer information
+          schema:
+            $ref: "#/definitions/customer"
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: Existing customer details edited
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /bss/provision/customers/{customerId}/expeditionaddress:
+    post:
+      description: create a new customer billing address on the bss
+      operationId: createBillingAddress
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customerId
+          in: path
+          type: string
+          description: Customer address id
+          required: true
+        - name: customer address
+          in: body
+          description: Customer address information
+          schema:
+            $ref: "#/definitions/customer_address"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New billing address created
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+    get:
+      description: Returns a list of customers billing addressess that match the search criteria. If multiple criteria are specified, the result will be a list of all customers billing addresses that match all the criteria (logical AND)
+      operationId: searchBillingAddress
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: customerId
+          in: path
+          type: string
+          description: Customer id to edit/update
+          required: true
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of customers that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/customer_address'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /bss/provision/customer_address/{customerid}/expeditionaddress/{eaid}:
+    put:
+      description: edit an existing customer billing address
+      operationId: editBillingAddress
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customerid
+          in: path
+          type: string
+          description: Customer id to edit/update
+          required: true
+        - name: customer
+          in: body
+          description: Customer information
+          schema:
+            $ref: "#/definitions/customer_address"
+          required: true
+        - name: eaid
+          in: path
+          type: string
+          description: customers/users billing address id
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: Existing customer details edited
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+    delete:
+      description: delete a customer on the bss
+      operationId: deleteBilling
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: userHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: sessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customerid
+          in: path
+          type: string
+          description: Customer id to delete
+          required: true
+        - name: eaid
+          in: path
+          type: string
+          description: customers/users billing address id
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: Existing customer details edited
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+
+
+  /bss/provision/customer/{customerId}/expeditionaddress/{eaid}/contact:
+    post:
+      description: create a new customer contact
+      operationId: createContact
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: createContact
+          in: body
+          description: Create new customer contact
+          schema:
+            $ref: "#/definitions/contact"
+          required: true
+        - name: eaid
+          in: path
+          type: string
+          description: customers/users billing address id
+          required: true
+        - name: customerId
+          in: path
+          type: string
+          description: customers/users id
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New contact id created
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    get:
+      description: Returns a list of customers billing addressess that match the search criteria. If multiple criteria are specified, the result will be a list of all customers billing addresses that match all the criteria (logical AND)
+      operationId: searchCustomerContact
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: eaid
+          in: path
+          type: string
+          description: Customer billing address  id
+          required: true
+        - name: customerId
+          in: path
+          type: string
+          description: customers/users id
+          required: true
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of customers that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/contact'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /bss/provision/customer/{customerid}/expeditionaddress/{eaid}/contact/{cid}:
+    put:
+      description: edit an existing customer contact
+      operationId: editCustomerContact
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: contact
+          in: body
+          description: Customer contact information
+          schema:
+            $ref: "#/definitions/contact"
+          required: true
+        - name: eaid
+          in: path
+          type: string
+          description: customers/users billing address id
+          required: true
+        - name: customerid
+          in: path
+          type: string
+          description: Customer id
+          required: true
+        - name: cid
+          in: path
+          type: string
+          description: users/customers contact id
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: Existing customer details edited
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+    delete:
+      description: delete a customer contact
+      operationId: deleteCustomerContact
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: eaid
+          in: path
+          type: string
+          description: Customer billing address to delete
+          required: true
+        - name: customerid
+          in: path
+          type: string
+          description: Customer id to delete
+          required: true
+        - name: cid
+          in: path
+          type: string
+          description: users/customers contact id
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: customer billing address deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+

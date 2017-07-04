@@ -1,0 +1,17 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/teloYellow</item>
+        <item name="colorPrimaryDark">@color/teloYellowDark</item>
+        <item name="colorAccent">@color/teloGreen</item>
+    </style>
+
+    <style name="AppThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/teloYellow</item>
+        <item name="colorPrimaryDark">@color/teloYellowDark</item>
+        <item name="colorAccent">@color/teloGreen</item>
+    </style>
+
+</resources>

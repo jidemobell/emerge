@@ -1,0 +1,1041 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Business Support System API - Customer Contracts",
+        "description": "Specification of REST API for Business Support System",
+        "contact": {
+            "name": "Emerge team",
+            "email": "jorge.patrao@smarttank-solutions.com",
+            "url": "https://www.linkedin.com/company/smart-tank"
+        }
+    },
+    "host": "bss.emerge.com",
+    "basePath": "/bss/v1",
+    "schemes": [
+        "https"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "definitions": {
+        "contractTemplate": {
+            "type": "object",
+            "required": [
+                "name",
+                "description",
+                "id",
+                "creationDate",
+                "preamble",
+                "clauses",
+                "expirationConditions"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "name of the contract template"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "description of the contract template"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "contractID, managed by the server. Ignored on DELETE, PUT and POST messages."
+                },
+                "creationDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date when the contract was created"
+                },
+                "modificationDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date when the contract was modified"
+                },
+                "preamble": {
+                    "type": "string",
+                    "description": "Contract justification"
+                },
+                "clauses": {
+                    "type": "string",
+                    "description": "Contract clauses"
+                },
+                "expirationConditions": {
+                    "type": "string",
+                    "description": "The type of contract being created"
+                }
+            }
+        },
+        "contractBase": {
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/contractTemplate"
+                }
+            ],
+            "required": [
+                "customerID",
+                "startDate"
+            ],
+            "properties": {
+                "startDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date when the contract effectively starts producing effect"
+                },
+                "endDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date when the contract effectively stops producing effect"
+                },
+                "automaticRenewal": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "The contract will automatically renew when End Date is reached"
+                },
+                "customerID": {
+                    "type": "string",
+                    "description": "CustomerID is the secondContractor. The system will retrieve the necessary information"
+                }
+            }
+        },
+        "contractPostpaid": {
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/contractBase"
+                }
+            ],
+            "required": [
+                "billingPeriod",
+                "billingDay",
+                "allowJointBilling"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "new",
+                        "pending",
+                        "active",
+                        "inactive",
+                        "cancelled",
+                        "expired",
+                        "closed"
+                    ]
+                },
+                "allowJointBilling": {
+                    "type": "boolean",
+                    "description": "allow this contract to be billed together with other contracts with the same billing cycle"
+                },
+                "billingPeriod": {
+                    "description": "billing periodicity",
+                    "type": "string",
+                    "enum": [
+                        "monthly",
+                        "bimonthly",
+                        "quarterly",
+                        "semianually",
+                        "anually"
+                    ]
+                },
+                "billingDay": {
+                    "type": "number",
+                    "format": "int32",
+                    "description": "day of the month when billing should take place"
+                },
+                "servicesID": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "ID of the services associated with contract. If it is a prepaid contract, the IDs refer to TEC, TELO or PSP services, and there will be only ONE object on the array"
+                }
+            }
+        },
+        "contractPrepaid": {
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/contractBase"
+                }
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "new",
+                        "active",
+                        "closed"
+                    ]
+                },
+                "serviceID": {
+                    "type": "string",
+                    "description": "ID of the service associated with contract."
+                }
+            }
+        },
+        "errorModel": {
+            "type": "object",
+            "required": [
+                "code",
+                "message"
+            ],
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "paths": {
+        "/bss/provision/contracts/templates/": {
+            "post": {
+                "description": "create a new contract template",
+                "operationId": "createContractTemplate",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "contract",
+                        "in": "body",
+                        "description": "contract template information",
+                        "schema": {
+                            "$ref": "#/definitions/contractTemplate"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Provisioning"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "New contract template created",
+                        "schema": {
+                            "type": "string",
+                            "description": "ID of the created contract"
+                        }
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            },
+            "get": {
+                "description": "Gets `contract template` objects.\nOptional pagination parameters - offset, and limit to determine the number of records to fetch\n",
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Page offset",
+                        "default": 0,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Page limit",
+                        "default": 20,
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 10,
+                        "required": true
+                    },
+                    {
+                        "name": "templateName",
+                        "type": "string",
+                        "in": "query",
+                        "description": "Name of the contract template"
+                    },
+                    {
+                        "name": "templateDescription",
+                        "type": "string",
+                        "in": "query",
+                        "description": "Description of the contract template"
+                    }
+                ],
+                "tags": [
+                    "Reporting"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of contract that match the search criteria",
+                        "schema": {
+                            "title": "CollectionOfContracts",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/contractTemplate"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/bss/provision/contracts/templates/{id}": {
+            "put": {
+                "description": "Update an existing contract template",
+                "operationId": "editContractTemplate",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "number",
+                        "format": "int64",
+                        "description": "Id of contract to update",
+                        "required": true
+                    },
+                    {
+                        "name": "contract",
+                        "in": "body",
+                        "description": "contract template information",
+                        "schema": {
+                            "$ref": "#/definitions/contractTemplate"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Contract template edited"
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a contract template",
+                "operationId": "deleteContractTemplate",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "string",
+                        "description": "contract template id to delete",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "contract deleted"
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/bss/provision/contract/prepaid/customer/{customerid}": {
+            "post": {
+                "description": "create a new contract for a customer",
+                "operationId": "createContract",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "customerid",
+                        "in": "path",
+                        "type": "string",
+                        "description": "customer id",
+                        "required": true
+                    },
+                    {
+                        "name": "contract",
+                        "in": "body",
+                        "description": "contract information",
+                        "schema": {
+                            "$ref": "#/definitions/contractPrepaid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Provisioning"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "New contract created",
+                        "schema": {
+                            "type": "string",
+                            "description": "Created contract ID"
+                        }
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            },
+            "get": {
+                "description": "Gets contracts for a specific customer\nOptional pagination parameters - offset, limits determine the size of the fetch bucket\n",
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Page offset",
+                        "default": 0,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Page limit",
+                        "default": 20,
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 10,
+                        "maximum": 100
+                    },
+                    {
+                        "name": "customerid",
+                        "in": "path",
+                        "type": "number",
+                        "format": "int64",
+                        "description": "Id of customer whose contract to fetch",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Reporting"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of contract that match the search criteria",
+                        "schema": {
+                            "title": "CollectionOfContracts",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/contractPrepaid"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/bss/provision/contract/prepaid/{id}": {
+            "put": {
+                "description": "Update an existing contract",
+                "operationId": "editContract",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "number",
+                        "format": "int64",
+                        "description": "Id of contract to update",
+                        "required": true
+                    },
+                    {
+                        "name": "contract",
+                        "in": "body",
+                        "description": "contract information",
+                        "schema": {
+                            "$ref": "#/definitions/contractPrepaid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Existing contract details edited"
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "(also deletes all related services)",
+                "operationId": "deleteContract",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "string",
+                        "description": "contract id to delete",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "contract deleted"
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/bss/provision/contract/postpaid/{id}/confirm": {
+            "put": {
+                "description": "Confirm a contract, changes a contract from the new state -> pending",
+                "operationId": "confirmContract",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "number",
+                        "format": "int64",
+                        "description": "Id of contract to confirm",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "New contract details confirmed"
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/bss/provision/contract/postpaid/customer/{customerid}": {
+            "post": {
+                "description": "create a new contract for a customer",
+                "operationId": "createPostpaidContract",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "customerid",
+                        "in": "path",
+                        "type": "string",
+                        "description": "customer id",
+                        "required": true
+                    },
+                    {
+                        "name": "contract",
+                        "in": "body",
+                        "description": "contract information",
+                        "schema": {
+                            "$ref": "#/definitions/contractPostpaid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Provisioning"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "New contract created",
+                        "schema": {
+                            "type": "string",
+                            "description": "Created contract ID"
+                        }
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            },
+            "get": {
+                "description": "Gets contracts for a specific customer\nOptional pagination parameters - offset, limits determine the size of the fetch bucket\n",
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Page offset",
+                        "default": 0,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Page limit",
+                        "default": 20,
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 10,
+                        "maximum": 100
+                    },
+                    {
+                        "name": "customerid",
+                        "in": "path",
+                        "type": "number",
+                        "format": "int64",
+                        "description": "Id of customer whose contract to fetch",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Reporting"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of contract that match the search criteria",
+                        "schema": {
+                            "title": "CollectionOfContracts",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/contractPostpaid"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/bss/provision/contract/postpaid/{id}": {
+            "put": {
+                "description": "Update an existing contract",
+                "operationId": "editPostPaidContract",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "number",
+                        "format": "int64",
+                        "description": "Id of contract to update",
+                        "required": true
+                    },
+                    {
+                        "name": "contract",
+                        "in": "body",
+                        "description": "contract information",
+                        "schema": {
+                            "$ref": "#/definitions/contractPrepaid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Existing contract details edited"
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "(also deletes all related services)",
+                "operationId": "deletePostpaidContract",
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "umUserHash",
+                        "in": "header",
+                        "description": "Userhash, as returned by the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umSessionID",
+                        "in": "header",
+                        "description": "SessionID on the User Management system",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "umDomain",
+                        "in": "header",
+                        "type": "string",
+                        "description": "Domain of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "string",
+                        "description": "contract id to delete",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "contract deleted"
+                    },
+                    "default": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/errorModel"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

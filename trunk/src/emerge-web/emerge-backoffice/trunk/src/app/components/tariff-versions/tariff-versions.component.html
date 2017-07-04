@@ -1,0 +1,93 @@
+<app-backoffice-links>
+</app-backoffice-links>
+
+<div class="main-content-body">
+  <md-card>
+    <md-card-subtitle class="md-card-subtitle main-content-title">
+      <h1 class="main-content-title"><span class="md-headline">{{'SEARCH_TARIFF_VERSIONS' | translate}}</span></h1>
+      <a routerLink="/backoffice/tariff-version/create"><md-icon>add circle</md-icon></a>
+    </md-card-subtitle>
+    <md-card-content>
+      <form (submit)="getTariffVersions()" class="row">
+        <div class="md-padding flex">
+          <md-input name="query.username" [(ngModel)]="query.username" placeholder="{{'USERNAME' | translate}}"></md-input>
+        </div>
+        <div class="md-padding flex">
+          <md-input name="query.imsi" [(ngModel)]="query.imsi" placeholder="{{'IMSI' | translate}}"></md-input>
+        </div>
+        <div class="md-padding flex">
+          <md-input name="query.iccid" [(ngModel)]="query.iccid" placeholder="{{'ICCID' | translate}}"></md-input>
+        </div>
+        <div class="md-padding flex">
+          <md-input name="query.msisdn" [(ngModel)]="query.msisdn" placeholder="{{'MSISDN' | translate}}"></md-input>
+        </div>
+        <div class="md-padding flex">
+          <label class="select-label display-block">{{'STATUS' | translate}}</label>
+          <select name="query.status" [(ngModel)]="query.status">
+           <optgroup [label]="'STATUS' | translate">
+            <option>{{'ACTIVE' | translate}}</option>
+            <option>{{'INACTIVE' | translate}}</option>
+           </optgroup>
+          </select>
+        </div>
+        <div class="md-padding flex"><md-input style="visibility:hidden;"></md-input></div>
+        <div class="md-padding flex"><md-input style="visibility:hidden;"></md-input></div>
+        <div class="md-padding flex position-relative" (click)="clearSearch()"><button type="button" md-raised-button>{{'CANCEL' | translate}}</button></div>
+        <div class="md-padding flex position-relative" style="right:10px;">
+          <button [disabled]="isLoading" md-raised-button>{{'SEARCH' | translate}}</button>
+        </div>
+      </form>
+
+      <div *ngIf="searchActive">
+       <hr />
+
+       <div class="clear" style="margin-top:30px; margin-bottom:5px;"></div>
+       <md-spinner class="em-spinner" color="accent" *ngIf="isLoading"></md-spinner>
+       <div *ngIf="!isLoading && tariffVersions.length <= 0">Sorry! No results were found for your search. Please refine your search and try again.</div>
+       <div *ngIf="!isLoading && tariffVersions.length > 0" class="align right">Export: <a href="#" title="Export as CSV">CSV</a> | <a href="#" title="Export as PDF">PDF</a></div>
+
+       <table *ngIf="tariffVersions.length > 0" class="search-results">
+        <thead>
+         <tr>
+          <th>{{'VERSION_ID' | translate}}</th>
+          <th>{{'STATUS' | translate}}</th>
+          <th>{{'DESCRIPTION' | translate}}</th>
+          <th>{{'ACTIVATION_DATE' | translate}}</th>
+          <th>{{'ACTIONS' | translate}}</th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr *ngFor="let tv of tariffVersions; let index=index; let odd=odd; let even=even;" class="row" [ngClass]="{ odd: odd, even: even }">
+          <td>{{tv.id}}</td>
+          <td>{{tv.status | uppercase | translate}}</td>
+          <td>{{tv.description}}</td>
+          <td>{{tv.activationDate}}</td>
+          <td>
+            <a routerLink="/backoffice/tariff-versions/{{tv.id}}" title="{{'EDIT' | translate}}"><md-icon>remove_red_eye</md-icon></a>
+            <a (click)="clone(tv)" title="{{'CLONE' | translate}}"><md-icon>content_copy</md-icon></a>
+            <!--<a (click)="delete(tv)" title="{{'DELETE' | translate}}"><md-icon>delete</md-icon></a>-->
+          </td>
+         </tr>
+        </tbody>
+       </table>
+
+       <div *ngIf="paginate">
+         <span class="search-results-navigator-box" title="First" (click)="first()"><span class="inline-block search-results-navigator">&laquo;</span></span>
+         <span class="search-results-navigator-box" title="Previous" (click)="previous()"><span class="inline-block search-results-navigator">&lsaquo;</span></span>
+         &nbsp;
+         <span class="search-results-navigator-box" title="Next" (click)="next()"><span class="inline-block search-results-navigator">&rsaquo;</span></span>
+         <span class="search-results-navigator-box" title="Last" (click)="last()"><span class="inline-block search-results-navigator">&raquo;</span></span>
+       </div>
+       
+      </div>
+
+      <div class="clear">&nbsp;</div>
+
+      <app-confirm-dialog #confirmDialog></app-confirm-dialog>
+      <app-prompt-dialog #promptDialog></app-prompt-dialog>
+
+    </md-card-content>
+
+  </md-card>
+
+</div>

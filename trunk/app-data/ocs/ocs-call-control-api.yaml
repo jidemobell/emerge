@@ -1,0 +1,987 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Online Charging System Service Control API
+  description: Specification of Service Control REST API for Emerge Online Charging System
+  contact:
+    name: Emerge team
+    email: jorge.patrao@smarttank-solutions.com
+    url: 'https://www.linkedin.com/company/smart-tank'
+host: ocs.emerge.com
+basePath: /ocs/v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  payphone_credentials:
+    type: object
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        description: Payphone Username.
+      password:
+        type: string
+        description: >-
+          Payphone Password, must be hashed before sending. On GET operations,
+          the server must not include the password.
+  
+  service_params:
+    type: object
+    required:
+      - service_start_time
+      - payphoneID
+    properties:
+      service_start_time:
+        type: string
+        format: date
+      call_answer_time:
+        type: string
+        format: date
+      payphoneID:
+        type: string
+      
+  end_service_req:
+    type: object
+    required:
+      - service_start_time
+      - call_answer_time
+      - service_end_time
+      - service_duration
+      - end_cause
+    properties:
+      service_start_time:
+        type: string
+        format: date
+      call_answer_time:
+        type: string
+        format: date  
+      service_end_time:
+        type: string
+        format: date
+      service_duration:
+        type: string
+        format: date
+      end_cause:
+        type: string
+      
+  sim:
+    type: object
+    required:
+      - msisdn
+      - imsi
+      - iccid
+    properties:
+      msisdn:
+        type: string
+      imsi:
+        type: string
+      iccid:
+        type: string
+  equipment:
+    type: object
+    required:
+      - imei1
+      - imei2
+    properties:
+      serialNr:
+        type: string
+      MAC:
+        type: string
+      imei1:
+        type: string
+      imei2:
+        type: string
+  version:
+    type: object
+    required:
+      - major
+      - minor
+      - patch
+    properties:
+      major:
+        type: integer
+        format: int32
+      minor:
+        type: integer
+        format: int32
+      patch:
+        type: integer
+        format: int32
+      status:
+        type: string
+        enum:
+          - Allowed
+          - Recommend
+          - NotAllowed
+        description: >-
+          Enum field containing - Allowed, Recommend, NotAllowed.
+  application:
+    type: object
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+      version:
+        $ref: '#/definitions/version'
+  status:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum:
+          - Inactive
+          - Ready
+          - Active
+          - Deleted
+      statusDate:
+        type: string
+        format: date-time
+        description: Start date of current status.
+
+  payphone:
+    type: object
+    required:
+      - equipment
+      - sim1
+      - application
+    properties:
+      id:
+        type: number
+        format: long
+        description: >-
+          id is created by the OCS when creating a new Payphone. When
+          specified in PUT or POST operations, it is ignored by the server.
+      equipment:
+        $ref: '#/definitions/equipment'
+      sim1:
+        $ref: '#/definitions/sim'
+      sim2:
+        $ref: '#/definitions/sim'
+      application:
+        $ref: '#/definitions/application'
+      status:
+        $ref: '#/definitions/status'
+      creation_date:
+        type: string
+        format: date-time
+      modification_date:
+        type: string
+        format: date-time
+      credentials:
+        $ref: "#/definitions/payphone_credentials"
+      config_data:
+        $ref: "#/definitions/config_data"
+
+  payphone_authentication_data:
+    type: object
+    required:
+      - session_id
+      - message
+      - code
+    properties:
+      access_token:
+        type: string
+        description: 'Access Token, created by the OCS.'
+      session_id:
+        type: number
+        format: long
+        description: 'Session ID, created by the OCS'
+      message:
+        type: string
+        description: 'Authentication status message.'
+      code:
+        type: string
+        description: 'Authentication status code'
+      session_start_time:
+        type: string
+        format: date-time
+      config_data:
+        $ref: '#/definitions/config_data'
+      balance:
+        type: number
+        format: double
+
+  error_model:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+
+  location_information:
+    type: object
+    properties:
+      gsm_cell_id:
+        type: string
+        description: GSM Cell Id
+      gsm_location_area_code:
+        type: string
+        description: GSM Location Area Code
+      gps_lat:
+        type: number
+        description: GPS Latitude
+      gps_lng:
+        type: number
+        description: GPS Longitude
+
+  start_session_response:
+    type: object
+    required:
+      - payphone_authentication_data
+    properties:
+      payphone_authentication_data:
+        $ref: '#/definitions/payphone_authentication_data'
+  start_service_request:
+    type: object
+    required:
+      - origin_msisdn
+      - destination_msisdn
+      - service_credit
+      - payphone_ID
+      - id
+    properties:
+      origin_msisdn:
+        type: string
+        description: msisdn used to originate the call.
+      destination_msisdn:
+        type: string
+        description: msisdn to call
+      service_credit:
+        type: number
+        format: int32
+        description: Credit to spend on the service
+      payphone_ID:
+        type: number
+        format: int32
+        description: payphone ID initiating the call id is created by the OCS when creating a new Payphone. When
+          specified in PUT or POST operations, it is ignored by the server.
+      id:
+        type: number
+        format: int32
+        description: profile id is created by the OCS when creating a new Payphone Service. When
+          specified in PUT or POST operations, it is ignored by the server.
+  tariff:
+    type: object
+    required:
+      - id
+      - group_id
+      - zone_id
+      - cost
+    properties:
+      id:
+        type: number
+        format: long
+        description: Used tariff
+      group_id:
+        type: number
+        format: long
+        description: Applied tariff group
+      zone_id:
+        type: number
+        format: long
+        description: Applied tariff zone
+      cost:
+        type: number
+        format: float
+        description: Applied tariff cost
+  start_service_response:
+    type: object
+    required:
+      - service_id
+      - service_authorized_time
+      - tariff
+      - max_service_duration
+    properties:
+      service_id:
+        type: number
+        format: long
+        description: >-
+          OCS Service ID. Used to identify the current service within the OCS
+          and current session_id.
+      service_authorized_time:
+        type: string
+        format: date-time
+        description: Date/time when the service was authorized
+      origin_msisdn:
+        type: string
+        description: msisdn that the Payphone must use to originate the call
+      max_service_duration:
+        type: number
+        format: int32
+        description: Maximum service duration. To be enforced by the payphone application.
+      tariff:
+        $ref: '#/definitions/tariff'
+
+  delivered_service_information:
+    type: object
+    description: contains information about services that were delivered.
+    required:
+      - origin_msisdn
+      - destination_msisdn
+      - service_start_time
+      - service_established_time
+      - service_end_time
+      - service_duration
+      - billed_duration
+      - billed_amount
+      - tariff
+      - end_cause
+      - initial_balance
+      - final_balance
+      - intial_credit
+      - final_credit
+    properties:
+      origin_msisdn:
+        type: string
+        description: Origin msisdn
+      destination_msisdn:
+        type: string
+        description: Origin msisdn
+      service_start_time:
+        type: string
+        format: date-time
+        description: Date/time when service was requested to start
+      service_established_time:
+        type: string
+        format: date-time
+        description: Date/time when service has actually started
+      service_end_time:
+        type: string
+        format: date-time
+        description: Date/time when service has actually started
+      service_duration:
+        type: number
+        format: int32
+        description: 'Service duration, in seconds.'
+      billed_duration:
+        type: number
+        format: int32
+        description: 'Billed duration, in seconds.'
+      billed_amount:
+        type: number
+        format: int32
+        description: Billed amount.
+      tariff:
+        $ref: '#/definitions/tariff'
+      end_cause:
+        type: string
+        description: Logical end cause of the delivered service
+      initial_balance:
+        type: number
+        format: int32
+        description: Initial payphone balance
+      final_balance:
+        type: number
+        format: int32
+        description: Final payphone balance
+      intial_credit:
+        type: number
+        format: int32
+        description: 'Initial service credit, specified by the customer'
+      final_credit:
+        type: number
+        format: int32
+        description: Final service credit
+  end_service_response:
+    type: object
+    required:
+      - session_id
+      - service_id
+      - deliveredService
+      - remaining_credit
+    properties:
+      session_id:
+        type: number
+        format: long
+        description: OCS Session ID. Used to identify the current session within the OCS
+      service_id:
+        type: number
+        format: long
+        description: >-
+          OCS Service ID. Used to identify the service within the session on the
+          OCS
+      deliveredService:
+        $ref: '#/definitions/delivered_service_information'
+      remaining_credit:
+        type: number
+        format: float
+        description: >-
+          Remaining credit for additional services within the current session
+          (Initial credit specified by the customer minus the cost of the
+          delivered services so far)
+  end_session_response:
+    type: object
+    required:
+      - session_start_time
+      - session_end_time
+      - session_duration
+      - number_of_services
+      - total_billed_duration
+      - total_billed_amount
+      - end_cause
+      - remaining_credit
+      - payphone_balance
+    properties:
+      session_start_time:
+        type: string
+        format: date-time
+        description: Date/time when service has actually started
+      session_end_time:
+        type: string
+        format: date-time
+        description: Date/time when service has actually started
+      session_duration:
+        type: number
+        format: int32
+        description: 'Session duration, in seconds'
+      number_of_services:
+        type: number
+        format: int32
+        description: Number of services within the session
+      total_service_duration:
+        type: number
+        format: int32
+        description: 'Total duration of all services within the session, in seconds'
+      total_billed_duration:
+        type: number
+        format: int32
+        description: 'Total billed duration of all services within the session, in seconds'
+      total_billed_amount:
+        type: number
+        format: int32
+        description: Total billed amount of all services within the session
+      end_cause:
+        type: string
+        description: Logical end cause of the session
+      remaining_credit:
+        type: number
+        format: float
+        description: >-
+          Remaining credit (Initial credit specified by the customer minus the
+          cost of the delivered services)
+      payphone_balance:
+        type: number
+        format: float
+        description: Remaining payphone balance
+  keep_alive_request:
+    type: object
+    required:
+      - payphone
+      - location_information
+    properties:
+      payphone:
+        $ref: '#/definitions/payphone'
+      location_information:
+        $ref: "#/definitions/location_information"
+      access_token:
+        type: string
+        description: User Access Token
+
+  config_data:
+    type: object
+    properties:
+      default_language:
+        type: string
+        enum:
+          - portuguese
+          - french
+          - english
+      keep_alive_interval:
+        type: number
+        description: 'Keep alive interval, in seconds, that the payphone must obey'
+      send_errors_to_ocs:
+        type: number
+        description: Send application error logs during the next <sendErrorsToOCS> seconds
+      preferred_msisdn:
+        type: string
+      silence_mode:
+        type: boolean
+        default: false
+        description: Put the payphone in silence mode - it will disable all messages except keepAlive, which will be sent every 24h
+      credit_buttons:
+        type: array
+        description: Buttons to display for service credit specification
+        items:
+          $ref: "#/definitions/credit_button"
+        uniqueItems: true
+
+  credit_button:
+    type: object
+    description: Contains information about credit buttons to display on the Payphone GUI
+    required:
+      - label
+      - amount
+    properties:
+      label:
+        type: string
+        description: Button label
+      amount:
+        type: number
+        description: Credit amount
+
+  keep_alive_response:
+    type: object
+    properties:
+      config_data:
+        $ref: '#/definitions/config_data'
+  log_request:
+    type: object
+    required:
+      - error_code
+      - error_description
+    properties:
+      error_code:
+        type: string
+      error_description:
+        type: string
+
+  authentication_request:
+    type: object
+    required:
+      - payphone
+      - location_information
+    properties:
+      payphone:
+        $ref: '#/definitions/payphone'
+      location_information:
+        $ref: "#/definitions/location_information"
+
+paths:
+  /ocs/payphones/callcontrol/authenticate{session_id}:
+    post:
+      description: Authenticate on the OCS
+      operationId: login
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: payphoneInformation
+          in: body
+          description: Payphone information
+          schema:
+            $ref: '#/definitions/authentication_request'
+          required: true
+        - name: access_token
+          in: header
+          description: 'Access token, as provided by OCS'
+          type: string
+          required: true
+        - name: session_id
+          in: path
+          description: ID of session to resume on the OCS.
+          required: true
+          type: number
+          format: long
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Authentication accepted
+          schema:
+            $ref: '#/definitions/payphone_authentication_data'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    delete:
+      description: End authentication on the OCS
+      operationId: logout
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: access_token
+          in: header
+          description: 'Access token, as provided by OCS'
+          type: string
+          required: true
+        - name: session_id
+          in: path
+          description: ID of session to resume on the OCS.
+          required: true
+          type: number
+          format: long
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Logout done
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+  /ocs/payphones/callcontrol/session{session_id}:
+    post:
+      description: Authenticate and/or request a new session on the OCS
+      operationId: startSession
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: startSessionReq
+          in: body
+          description: Payphone information
+          schema:
+            $ref: '#/definitions/authentication_request'
+          required: true
+        - name: session_id
+          in: path
+          description: ID of session to resume on the OCS.
+          required: true
+          type: number
+          format: long
+        - name: access_token
+          in: header
+          description: 'Access token, as provided by OCS'
+          type: string
+          required: true
+      tags:
+        - Call control
+      responses:
+        '200':
+          description: New session created
+          schema:
+            $ref: '#/definitions/start_session_response'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+  '/ocs/payphones/callcontrol/session/{session_id}':
+    put:
+      description: >-
+        Resume session on the OCS. Used when the payphone looses and recovers
+        connection.
+      operationId: resumeSession
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: session_id
+          in: path
+          description: ID of session to resume on the OCS.
+          required: true
+          type: number
+          format: long
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+      tags:
+        - Call control
+      responses:
+        '200':
+          description: Session resumed
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    delete:
+      description: Ends the specified session
+      operationId: endSession
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: session_id
+          in: path
+          description: ID of session to end
+          required: true
+          type: string
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+      tags:
+        - Call control
+      responses:
+        '200':
+          description: Session ended on the OCS
+          schema:
+            $ref: '#/definitions/end_session_response'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+  '/ocs/payphones/callcontrol/session/{session_id}/log':
+    post:
+      description: Log session related event
+      operationId: logSessionEvent
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: session_id
+          in: path
+          description: ID of the session
+          required: true
+          type: number
+          format: long
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+        - name: log_request
+          in: body
+          description: Error log information
+          schema:
+            $ref: '#/definitions/log_request'
+          required: true
+      tags:
+        - Call control
+      responses:
+        '200':
+          description: Session resumed
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+  '/ocs/payphones/callcontrol/session/{session_id}/service':
+    post:
+      description: Request authorization to start a new service within the current Session
+      operationId: startService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: session_id
+          in: path
+          description: ID of the session to create the service in
+          required: true
+          type: number
+          format: long
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+        - name: start_service_request
+          in: body
+          description: Service information
+          schema:
+            $ref: '#/definitions/start_service_request'
+          required: true
+      tags:
+        - Call control
+      responses:
+        '200':
+          description: New service created
+          schema:
+            $ref: '#/definitions/start_service_response'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+  '/ocs/payphones/callcontrol/session/{session_id}/service/{service_id}':
+    put:
+      description: >-
+        Notifies the OCS that the service has effectively started; Resumes the
+        current service when connectivity is lost and recovered
+      operationId: notifyStartService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: notifyServiceInformation
+          in: body
+          description: Payphone information
+          schema:
+            $ref: '#/definitions/service_params'
+          required: true
+        - name: session_id
+          in: path
+          description: ID of session to resume on the OCS.
+          required: true
+          type: number
+          format: long
+        - name: service_id
+          in: path
+          description: ID of the service
+          required: true
+          type: number
+          format: long
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+          
+      tags:
+        - Call control
+      responses:
+        '200':
+          description: Start service notified
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    delete:
+      description: Ends the service within the specified Session
+      operationId: endService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: notifyServiceInformation
+          in: body
+          description: Payphone information
+          schema:
+            $ref: '#/definitions/end_service_req'
+          required: true
+        - name: session_id
+          in: path
+          description: ID of session to resume on the OCS.
+          required: true
+          type: number
+          format: long
+        - name: service_id
+          in: path
+          description: ID of the service
+          required: true
+          type: number
+          format: long
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+      tags:
+        - Call control
+      responses:
+        '200':
+          description: service ended
+          schema:
+            $ref: '#/definitions/end_service_response'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+  '/ocs/payphones/callcontrol/session/{session_id}/service/{service_id}/log':
+    post:
+      description: Log service related event
+      operationId: logServiceEvent
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: session_id
+          in: path
+          description: ID of the session
+          required: true
+          type: number
+          format: long
+        - name: service_id
+          in: path
+          description: ID of the service
+          required: true
+          type: number
+          format: long
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+        - name: log_request
+          in: body
+          description: Service information. Not necessary when resuming the current service
+          schema:
+            $ref: '#/definitions/log_request'
+          required: false
+      tags:
+        - Call control
+      responses:
+        '200':
+          description: Start service notified
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+  /ocs/payphones/event/keepalive:
+    post:
+      description: >-
+        Periodic keep alive. Periodicity is configured in StartSession message;
+        may be reconfigured in the response
+      operationId: keepAlive
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+        - name: keep_alive_request
+          in: body
+          description: Keep alive information
+          schema:
+            $ref: '#/definitions/keep_alive_request'
+          required: true
+      tags:
+        - Event
+      responses:
+        '200':
+          description: Keep alive response
+          schema:
+            $ref: '#/definitions/keep_alive_response'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+  /ocs/payphones/event/log:
+    post:
+      description: Log call unrelated events
+      operationId: logEvent
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: access_token
+          in: header
+          description: 'access_token, as returned by the OCS.'
+          type: string
+          required: true
+        - name: log_request
+          in: body
+          description: Event information
+          schema:
+            $ref: '#/definitions/log_request'
+          required: true
+      tags:
+        - Event
+      responses:
+        '200':
+          description: Session ended on the OCS
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+

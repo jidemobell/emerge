@@ -1,0 +1,81 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply plugin: 'maven'
+apply plugin: 'java'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.2'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+task writeNewPom << {
+    pom {
+        project {
+            groupId 'com.timwe.emerge.mobile'
+            artifactId 'emerge-payphone'
+            version '1.0.0'
+            packaging 'pom'
+            parent {
+                groupId 'com.timwe.emerge'
+                artifactId 'emerge-base-project'
+                version '1.0.0'
+                relativePath '../../../emerge-base-project/trunk/pom.xml'
+            }
+        }
+    }.withXml {
+        asNode().appendNode('build').with {
+            appendNode('sourceDirectory', 'app/src/')
+        }.parent().appendNode('plugins')
+                .appendNode('plugin').with {
+                    appendNode('groupId', 'com.android.support')
+                    appendNode('version', '24.2.1')
+                    appendNode('artifactId', 'appcompat-v7')
+                }.parent().parent()
+                .appendNode('plugin').with {
+                    appendNode('groupId', 'com.alimuzaffar.lib')
+                    appendNode('version', '1.2')
+                    appendNode('artifactId', 'pinentryedittext')
+                }.parent().parent()
+                .appendNode('plugin').with {
+                    appendNode('groupId', 'com.squareup.retrofit2')
+                    appendNode('version', '2.1.0')
+                    appendNode('artifactId', 'retrofit')
+                }.parent().parent()
+                .appendNode('plugin').with {
+                    appendNode('groupId', 'com.google.code.gson')
+                    appendNode('version', '1.7.2')
+                    appendNode('artifactId', 'gson')
+                }.parent().parent()
+                .appendNode('plugin').with {
+                    appendNode('groupId', 'com.squareup.retrofit2')
+                    appendNode('version', '2.0.2')
+                    appendNode('artifactId', 'converter-gson')
+                }.parent().parent()
+                .appendNode('plugin').with {
+                    appendNode('groupId', 'com.snappydb')
+                    appendNode('version', '0.5.2')
+                    appendNode('artifactId', 'snappydb-lib')
+                }.parent().parent()
+                .appendNode('plugin').with {
+                    appendNode('groupId', 'com.esotericsoftware.kryo')
+                    appendNode('version', '2.24.0')
+                    appendNode('artifactId', 'kryo')
+                }
+    }.writeTo("pom.xml")
+}

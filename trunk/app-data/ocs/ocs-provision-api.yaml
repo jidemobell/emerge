@@ -1,0 +1,2660 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Online Charging System Provision API
+  description: Specification of Provision REST API for Emerge Online Charging System
+  contact:
+    name: Emerge team
+    email: jorge.patrao@smarttank-solutions.com
+    url: 'https://www.linkedin.com/company/smart-tank'
+host: ocs.emerge.com
+basePath: /ocs/v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  payphoneCredentials:
+    type: object
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        description: Payphone Username.
+      password:
+        type: string
+        description: >-
+          Payphone Password, must be hashed before sending. On GET operations,
+          the server must not include the password.
+
+
+  topUpRequest:
+    type: object
+    required:
+      - amount
+    properties:
+      amount:
+        type: number
+        format: float
+        description: Amount to top up
+ 
+  SIM:
+    type: object
+    required:
+      - MSISDN
+      - IMSI
+      - ICCID
+    properties:
+      MSISDN:
+        type: string
+      IMSI:
+        type: string
+      ICCID:
+        type: string
+  equipment:
+    type: object
+    required:
+      - IMEI
+    properties:
+      serial_no:
+        type: string
+      MAC:
+        type: string
+      IMEI:
+        type: string
+  version:
+    type: object
+    required:
+      - major
+      - minor
+      - patch
+    properties:
+      major:
+        type: integer
+        format: int64
+      minor:
+        type: integer
+        format: int64
+      patch:
+        type: integer
+        format: int64
+  application:
+    type: object
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+      version:
+        $ref: '#/definitions/version'
+  status:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum:
+          - Inactive
+          - Ready
+          - Active
+          - Deleted
+          - Disable
+      statusDate:
+        type: string
+        format: date-time
+        description: Start date of current status.
+  payphoneDevice:
+    type: object
+    required:
+      - equipment
+      - sim1
+      - application
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: >-
+          id is created by the OCS when creating a new Payphone. When
+          specified in PUT or POST operations, it is ignored by the server.
+      equipment:
+        $ref: '#/definitions/equipment'
+      sim1:
+        $ref: '#/definitions/SIM'
+      sim2:
+        $ref: '#/definitions/SIM'
+      application:
+        $ref: '#/definitions/application'
+      status:
+        $ref: '#/definitions/status'
+      creation_date:
+        type: string
+        format: date-time
+      modification_date:
+        type: string
+        format: date-time
+
+  payphoneService:
+    type: object
+    required:
+      - sim1
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: >-
+          id is created by the OCS when creating a new PayphoneService. When
+          specified in PUT or POST operations, it is ignored by the server.
+      payphone_device_id:
+        type: integer
+        format: int64
+        default: 0
+        description: >-
+          payphone_device_id is associated by the OCS backend when the device Authenticates or StartsSession.
+      sim1:
+        $ref: '#/definitions/SIM'
+      sim2:
+        $ref: '#/definitions/SIM'
+      customer_id:
+        type: integer
+        format: int64
+        default: 0
+      contract_id:
+        type: integer
+        format: int64
+        default: 0
+      profile_id:
+        type: integer
+        format: int64
+        default: 0
+      balance:
+        type: number
+        format: float
+        default: 0
+      status:
+        $ref: '#/definitions/status'
+      creation_date:
+        type: string
+        format: date-time
+      modification_date:
+        type: string
+        format: date-time
+      credentials:
+        $ref: '#/definitions/payphoneCredentials'
+      configData:
+        $ref: "#/definitions/configData"
+
+  errorModel:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+
+  tariff:
+    type: object
+    required:
+      - id
+      - name
+      - group_id
+      - initial_cost
+      - modulation_type_id
+      - initial_duration
+      - setup_cost
+      - recurrent_cost
+      - recurrent_duration
+      - tariff_version_id
+      - profile_id
+      - status
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used tariff
+      name:
+        type: string
+      group_id:
+        type: integer
+        format: int64
+        default: 0
+        description: Applied tariff group
+      initial_cost:
+        type: number
+        format: double
+        description: Applied tariff cost
+      initial_duration:
+        type: integer
+        format: int64
+        default: 0
+        description: Applied tariff initial duration
+      setup_cost:
+        type: number
+        format: double
+        description: Applied tariff setup cost
+      modulation_type_id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used tariff modulation type
+      recurrent_cost:
+        type: number
+        format: double
+        description: Used tariff  recurrent cost
+      recurrent_duration:
+        type: integer
+        format: int64
+        default: 0
+        description: Used tariff recurrent duration
+      tariff_version_id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used tariff version Id
+      status:
+        type: boolean
+        default: false
+        description:  Tariff status
+      profile_id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used Profile Id tariff
+
+  prefix:
+    type: object
+    required:
+      - country
+      - value
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used tariff
+      country:
+        type: string
+        description: Country that own the prefix
+      value:
+        type: integer
+        format: int32
+        description: Value for the Prefix
+      description:
+        type: string
+        description: Information about the prefix
+
+  zones:
+    type: object
+    required:
+      - name
+      - description
+      - group_id
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used for zone id
+      name:
+        type: string
+        description: The name of the zone
+      description:
+        type: string
+        description: Description  for the zone
+      group_id:
+        type: integer
+        format: int64
+        default: 0
+        description: Information about the zone
+
+  groups:
+    type: object
+    required:
+      - name
+      - description
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used for group id
+      name:
+        type: string
+        description: The name of the group
+      description:
+        type: string
+        description: Description  for the group
+        
+  specialDay:
+    type: object
+    required:
+      - day
+      - month
+      - year
+      - description
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used for the special day id 
+      day:
+        type: integer
+        format: int32
+        description: The day of the special day
+      month:
+        type: integer
+        format: int32
+        description: The month of the special day
+      year:
+        type: integer
+        format: int32
+        description: The year of the special day
+      description:
+        type: string
+        description: Description  for the special day
+        
+  modulation:
+    type: object
+    required:
+      - days
+      - end_time
+      - profile_id
+      - modulation_type_id
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used for the special day id 
+      days:
+        type: integer
+        format: int64
+        default: 0
+        description: The days for the modulation
+      end_time:
+        type: integer
+        format: int32
+        description: The end time for the modulation
+      profile_id:
+        type: integer
+        format: int64
+        default: 0
+        description: The profile id for the modulation 
+      modulation_type_id:
+        type: integer
+        format: int64
+        default: 0
+        description: The modulation type id  for the modulation
+      description:
+        type: string
+        description: Description  for the Modulation
+        
+
+  tariff-versions:
+    type: object
+    required:
+      - description
+      - status
+      - activation_date
+    properties:
+      id:
+        type: integer
+        format: int64
+        default: 0
+        description: Used for tariff version id
+      description:
+        type: string
+        description: Description of the Tarrif version
+      status:
+        type: string
+        description: Tarrif version status
+      activation_date:
+        type: string
+        format: date-time
+        description: Activation date for the Tarrif .
+
+
+
+  ongoingServiceInformation:
+    type: object
+    description: Contains information about ongoing services
+    required:
+      - origin_msisdn
+      - destination_msisdn
+      - service_start_time
+      - service_established_time
+      - service_duration
+      - tariff
+    properties:
+      origin_msisdn:
+        type: string
+        description: Origin MSISDN
+      destination_msisdn:
+        type: string
+        description: Origin MSISDN
+      service_start_time:
+        type: string
+        format: date-time
+        description: Date/time when service was requested to start
+      service_established_time:
+        type: string
+        format: date-time
+        description: Date/time when service has actually started
+      service_duration:
+        type: integer
+        format: int64
+        default: 0
+        description: 'Service duration, in seconds.'
+      tariff:
+        $ref: '#/definitions/tariff'
+
+  configData:
+    type: object
+    properties:
+      default_language:
+        type: string
+        enum:
+          - portuguese
+          - french
+          - english
+      keep_alive_interval:
+        type: number
+        description: 'Keep alive interval, in seconds, that the payphone must obey'
+      send_errors_to_ocs:
+        type: number
+        description: Send application error logs during the next <sendErrorsToOCS> seconds
+      preferred_msisdn:
+        type: string
+      silence_mode:
+        type: boolean
+        default: false
+        description: Put the payphone in silence mode - it will disable all messages except keepAlive, which will be sent every 24h
+      credit_buttons:
+        type: array
+        description: Buttons to display for service credit specification
+        items:
+          $ref: "#/definitions/credit_button"
+        uniqueItems: true
+
+  credit_button:
+    type: object
+    description: Contains information about credit buttons to display on the Payphone GUI
+    required:
+      - label
+      - amount
+    properties:
+      label:
+        type: string
+        description: Button label
+      amount:
+        type: number
+        format: float
+        description: Credit amount
+
+
+  topupRsp:
+    type: object
+    required:
+      - credit_before_topup
+      - credit_after_topup
+    properties:
+      credit_before_topup:
+        type: number
+        format: float
+      credit_after_topup:
+        type: number
+        format: float
+
+
+paths:
+  /ocs/provision/payphone-services:
+    get:
+      description: >-
+        Returns a list of Payphone Services that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all payphones that
+        match all the criteria (logical AND)
+      operationId: searchPayphoneService
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: payphone_id
+          in: query
+          description: Payphone ID
+          type: integer
+          format: int64
+          default: 0
+        - name: customer_id
+          in: query
+          description: Customer ID
+          type: integer
+          format: int64
+          default: 0
+        - name: username
+          in: query
+          description: Username
+          type: string
+        - name: serial_no
+          in: query
+          description: Equipment Serial Number
+          type: string
+        - name: mac
+          in: query
+          description: Equipment MAC Address
+          type: string
+        - name: IMEI
+          in: query
+          description: Equipment IMEI
+          type: string
+        - name: msisdn
+          in: query
+          description: SIM Card MSISDN
+          type: string
+        - name: iccid
+          in: query
+          description: SIM Card ICCID
+          type: string
+        - name: status
+          in: query
+          description: Payphone status
+          type: string
+          enum:
+            - Active
+            - Disabled
+            - Deleted
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of payphones that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/payphoneService'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    post:
+      description: Creates a new Payphone Service in the OCS.
+      operationId: createPayphoneService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: payphoneService
+          in: body
+          description: Payphone to create.
+          required: true
+          schema:
+            $ref: '#/definitions/payphoneService'
+      tags:
+        - Provision
+      responses:
+        '201':
+          description: payphone created
+          schema:
+            $ref: '#/definitions/payphoneService'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/payphone-devices:
+    get:
+      description: >-
+        Returns a list of Payphone Devicess that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all payphones that
+        match all the criteria (logical AND)
+      operationId: search
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: payphone_service_id
+          in: query
+          description: PayphoneService ID
+          type: integer
+          format: int64
+          default: 0
+        - name: customer_id
+          in: query
+          description: Customer ID
+          type: integer
+          format: int64
+          default: 0
+        - name: username
+          in: query
+          description: Username
+          type: string
+        - name: IMEI
+          in: query
+          description: Equipment IMEI
+          type: string
+        - name: msisdn
+          in: query
+          description: SIM Card MSISDN
+          type: string
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of payphones that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/payphoneDevice'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/payphone-devices/{id}:
+    get:
+      description: >-
+        Returns a Payphone Device
+      operationId: getPayphoneDeviceById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: id
+          in: path
+          description: Payphone Device ID
+          type: integer
+          format: int64
+          default: 0
+          required: true
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Payphones device
+          schema:
+            $ref: '#/definitions/payphoneDevice'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/payphone-services/{access}/{id}:
+    get:
+      description: Returns a Payphone service based on ID
+      operationId: searchPayphoneServiceById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: access
+          in: path
+          description: >-
+            Qualifies the ID, specifying how it should be interpreted by the
+            server.
+          required: true
+          type: string
+          enum:
+            - msisdn
+            - imsi
+            - iccid
+            - username
+        - name: id
+          in: path
+          description: Value of payphone service field to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: payphone information
+          schema:
+            $ref: '#/definitions/payphoneService'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    put:
+      description: Edits payphone service information
+      operationId: editPayphoneServiceById
+      produces:
+        - application/json
+      parameters:
+        - name: access
+          in: path
+          description: >-
+            Qualifies the ID, specifying how it should be interpreted by the
+            server.
+          required: true
+          type: string
+          enum:
+            - msisdn
+            - imei
+            - imsi
+            - iccid
+            - serial_no
+            - mac
+            - username
+        - name: id
+          in: path
+          description: ID of payphone service to edit
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: payphone
+          in: body
+          description: Payphone information to edit
+          required: true
+          schema:
+            $ref: '#/definitions/payphoneService'
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: payphone update
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    delete:
+      description: Deletes a payphone service based on payphone_id
+      operationId: deletePayphoneServiceById
+      parameters:
+        - name: access
+          in: path
+          description: >-
+            Qualifies the ID, specifying how it should be interpreted by the
+            server.
+          required: true
+          type: string
+          enum:
+            - msisdn
+            - imsi
+            - iccid
+            - username
+        - name: id
+          in: path
+          description: ID of payphone service to delete
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: payphone deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/payphone-services/{access}/{id}/topup:
+    put:
+      description: Edits payphone information
+      operationId: topupPayphoneServiceById
+      produces:
+        - application/json
+      parameters:
+        - name: access
+          in: path
+          description: >-
+            Qualifies the ID, specifying how it should be interpreted by the
+            server.
+          required: true
+          type: string
+          enum:
+            - msisdn
+            - imsi
+            - iccid
+            - username
+        - name: id
+          in: path
+          description: ID of payphone to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: topUpRequest
+          in: body
+          schema:
+            $ref: '#/definitions/topUpRequest'
+          required: true
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Amount credited
+          schema:
+            $ref: '#/definitions/topupRsp'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/payphone-services/ongoing-services:
+    get:
+      description: >-
+        Returns a list of ongoing service records that match the search criteria. If
+        multiple criteria are specified, the result will be a list of all calls
+        that match all the criteria (logical AND)
+      operationId: searchCalls
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: payphone_service_id
+          in: query
+          description: Payphone Service ID
+          type: integer
+          format: int64
+          default: 0
+        - name: customer_id
+          in: query
+          description: Customer ID
+          type: integer
+          format: int64
+          default: 0
+        - name: username
+          in: query
+          description: Username
+          type: string
+        - name: IMEI
+          in: query
+          description: Equipment IMEI
+          type: string
+        - name: destination_msisdn
+          in: query
+          description: Origin MSISDN
+          type: string
+        - name: origin_msisdn
+          in: query
+          description: Origin MSISDN
+          type: string
+        - name: iccid
+          in: query
+          description: SIM Card ICCID
+          type: string
+        - name: minDuration
+          in: query
+          description: List calls that last more that <minDuration> seconds
+          type: integer
+          format: int64
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of calls that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ongoingServiceInformation'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/tariffs:
+     get:
+      description: >-
+        Returns a list of Tariff Versions that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all tariff versions that
+        match all the criteria (logical AND)
+      operationId: searchTariffVersions
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: name
+          in: query
+          description: Name
+          type: string
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of tariff that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/tariff'
+        default:
+          description: Unexpected error
+          schema:
+            $ref:  '#/definitions/errorModel'
+     post:
+      description: Creates a new Tariff Service in the OCS.
+      operationId: createTariff
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: tariffService
+          in: body
+          description: Tariff to create.
+          required: true
+          schema:
+            $ref: '#/definitions/tariff'
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: tariff created
+          schema:
+            $ref: '#/definitions/tariff'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+      
+
+  /ocs/provision/prefixes:
+     get:
+      description: >-
+        Returns a list of Prefix that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all Prefixes that
+        match all the criteria (logical AND)
+      operationId: searchPrefixes
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: country
+          in: query
+          description: Country
+          type: string
+        - name: value
+          in: query
+          description: Prefix value
+          type: integer
+          format: int64
+          default: 0
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of prefixes that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/prefix'
+        default:
+          description: Unexpected error
+          schema:
+            $ref:  '#/definitions/errorModel'
+     post:
+      description: Creates a new Prefix in the OCS.
+      operationId: createPrefix
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: prefixService
+          in: body
+          description: Prefix to create.
+          required: true
+          schema:
+            $ref: '#/definitions/prefix'
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: prefix created
+          schema:
+            $ref: '#/definitions/prefix'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/prefixes/{id}:
+    get:
+      description: Returns a Prefix based on ID
+      operationId: searchPrefixById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: id
+          in: path
+          description: Value of prefix field to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: prefix information
+          schema:
+            $ref: '#/definitions/prefix'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    put:
+      description: Edits Prefix Information
+      operationId: editPrefixById
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of Prefix service to edit
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: payphone
+          in: body
+          description: Tax information to edit
+          required: true
+          schema:
+            $ref: '#/definitions/prefix'
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: prefix update
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    delete:
+      description: Deletes a Prefix based on prefix id
+      operationId: deletePrefixById
+      parameters:
+        - name: id
+          in: path
+          description: ID of payphone service to delete
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: prefix deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/zones:
+     get:
+      description: >-
+        Returns a list of Zones that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all zones that
+        match all the criteria (logical AND)
+      operationId: searchZones
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: group_id
+          in: query
+          description: Group ID
+          type: integer
+          format: int64
+          default: 0
+        - name: name
+          in: query
+          description: Zone name
+          type: string
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of Zones that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/zones'
+        default:
+          description: Unexpected error
+          schema:
+            $ref:  '#/definitions/errorModel'
+     post:
+      description: Creates a new zone in the OCS.
+      operationId: createZone
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: prefixService
+          in: body
+          description: Zone to create.
+          required: true
+          schema:
+            $ref: '#/definitions/zones'
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: zone created
+          schema:
+            $ref: '#/definitions/zones'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/zones/{id}:
+    get:
+      description: Returns a Zone based on ID
+      operationId: searchZoneById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: id
+          in: path
+          description: Value of zone field to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: zone information
+          schema:
+            $ref: '#/definitions/zones'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    put:
+      description: Edits Zone Information
+      operationId: editZoneById
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of Prefix service to edit
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: zone
+          in: body
+          description: Zone information to edit
+          required: true
+          schema:
+            $ref: '#/definitions/zones'
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: zone update
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    delete:
+      description: Deletes a Zone based on zone id
+      operationId: deleteZoneById
+      parameters:
+        - name: id
+          in: path
+          description: ID of zone to delete
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: zone deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/groups:
+     get:
+      description: >-
+        Returns a list of Groups that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all groups that
+        match all the criteria (logical AND)
+      operationId: searchGroups
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: name
+          in: query
+          description: Group Name
+          type: string
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of groups that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/groups'
+        default:
+          description: Unexpected error
+          schema:
+            $ref:  '#/definitions/errorModel'
+     post:
+      description: Creates a new group in the OCS.
+      operationId: createGroup
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: groupService
+          in: body
+          description: Group to create.
+          required: true
+          schema:
+            $ref: '#/definitions/groups'
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: group created
+          schema:
+            $ref: '#/definitions/groups'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/groups/{id}:
+    get:
+      description: Returns a Group based on ID
+      operationId: searchGroupById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: id
+          in: path
+          description: Value of zone field to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: group information
+          schema:
+            $ref: '#/definitions/groups'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    put:
+      description: Edits Zone Information
+      operationId: editGroupById
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of Group service to edit
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: group
+          in: body
+          description: Group information to edit
+          required: true
+          schema:
+            $ref: '#/definitions/groups'
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: group update
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    delete:
+      description: Deletes a Zone based on zone id
+      operationId: deleteGroupById
+      parameters:
+        - name: id
+          in: path
+          description: ID of group to delete
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: group deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+
+  /ocs/provision/tariff-versions:
+     get:
+      description: >-
+        Returns a list of Tariff Versions that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all tariff versions that
+        match all the criteria (logical AND)
+      operationId: searchTariffs
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: tariff_version_id
+          in: query
+          description: Tariff Version ID
+          type: integer
+          format: int64
+          default: 0
+        - name: customer_id
+          in: query
+          description: Customer ID
+          type: integer
+          format: int64
+          default: 0
+        - name: username
+          in: query
+          description: Username
+          type: string
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of tariff versions that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/tariff-versions'
+        default:
+          description: Unexpected error
+          schema:
+            $ref:  '#/definitions/errorModel'
+     post:
+      description: Creates a new tariff version in the OCS.
+      operationId: createTariffVersions
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: tariffVersionService
+          in: body
+          description: Tariff Version to create.
+          required: true
+          schema:
+            $ref: '#/definitions/tariff-versions'
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Tariff version  created
+          schema:
+            $ref: '#/definitions/tariff-versions'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  /ocs/provision/special-days:
+     get:
+      description: >-
+        Returns a list of Special Days that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all special days that
+        match all the criteria (logical AND)
+      operationId: searchSpecialDays
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+      
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of special days that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/specialDay'
+        default:
+          description: Unexpected error
+          schema:
+            $ref:  '#/definitions/errorModel'
+     post:
+      description: Creates a new special day in the OCS.
+      operationId: createSpecialDay
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: specialDayService
+          in: body
+          description: Special Day to create.
+          required: true
+          schema:
+            $ref: '#/definitions/specialDay'
+      tags:
+        - Provision
+      responses:
+        '201':
+          description: Special Day created
+          schema:
+            $ref: '#/definitions/specialDay'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  
+  /ocs/provision/special-days/{id}:
+    get:
+      description: Returns a Group based on ID
+      operationId: searchSpecialDayById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: id
+          in: path
+          description: Value of special day field to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: special day information
+          schema:
+            $ref: '#/definitions/specialDay'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    put:
+      description: Edits Special Day Information
+      operationId: editSpecialDayById
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of Special Day service to edit
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: specialDay
+          in: body
+          description: Special Day Information to edit
+          required: true
+          schema:
+            $ref: '#/definitions/specialDay'
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: special day update
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    delete:
+      description: Deletes a Special Day based on  id 
+      operationId: deleteSpecialDayById
+      parameters:
+        - name: id
+          in: path
+          description: ID of Special Day  to delete
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: special day deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+            
+  /ocs/provision/modulations:
+     get:
+      description: >-
+        Returns a list of Modulationss that match the search criteria. If multiple
+        criteria are specified, the result will be a list of all modulations that
+        match all the criteria (logical AND)
+      operationId: searchModulations
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Array of modulations that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/modulation'
+        default:
+          description: Unexpected error
+          schema:
+            $ref:  '#/definitions/errorModel'
+     post:
+      description: Creates a new modulation in the OCS.
+      operationId: createModulation
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: Modulation
+          in: body
+          description: Modulation to create.
+          required: true
+          schema:
+            $ref: '#/definitions/modulation'
+      tags:
+        - Provision
+      responses:
+        '201':
+          description: Modulation created
+          schema:
+            $ref: '#/definitions/modulation'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  
+  /ocs/provision/modulations/{id}:
+    get:
+      description: Returns a Modulation based on ID
+      operationId: searchModulationById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: id
+          in: path
+          description: Value of Modulation field to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: Modulation information
+          schema:
+            $ref: '#/definitions/modulation'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    put:
+      description: Edits Modulation Information
+      operationId: editModulationById
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of Modulation service to edit
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: specialDay
+          in: body
+          description: Modulation Information to edit
+          required: true
+          schema:
+            $ref: '#/definitions/modulation'
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: modulation update
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    delete:
+      description: Deletes a Modulation based on  id 
+      operationId: deleteModulationById
+      parameters:
+        - name: id
+          in: path
+          description: ID of Modulation  to delete
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: Modulation deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+            
+  /ocs/provision/tariffs/{id}:
+    get:
+      description: Returns a Tariff based on ID
+      operationId: searchTariffById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: id
+          in: path
+          description: Value of Modulation field to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: Tariff information
+          schema:
+            $ref: '#/definitions/tariff'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    put:
+      description: Edits Tariff Information
+      operationId: editTariffById
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of Tariff service to edit
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: tariff
+          in: body
+          description: Tariff Information to edit
+          required: true
+          schema:
+            $ref: '#/definitions/tariff'
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: Tariff update
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    delete:
+      description: Deletes a Tariff based on  id 
+      operationId: deleteTariffById
+      parameters:
+        - name: id
+          in: path
+          description: ID of Tariff  to delete
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: Tariff deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+            
+  /ocs/provision/clone-tariff-versions:
+    post:
+      description: Creates a new tariff version in the OCS.
+      operationId: cloneTariffVersions
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user on the User Management system
+          required: true
+        - name: cloneTariffVersionService
+          in: body
+          description: Tariff Version to clone.
+          required: true
+          schema:
+            $ref: '#/definitions/tariff-versions'
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Tariff version  created
+          schema:
+            $ref: '#/definitions/tariff-versions'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  
+  /ocs/provision/payphone-services/{access}/{id}/set-balance:
+    put:
+      description: Edits payphone information
+      operationId: setBalancePayphoneServiceById
+      produces:
+        - application/json
+      parameters:
+        - name: access
+          in: path
+          description: >-
+            Qualifies the ID, specifying how it should be interpreted by the
+            server.
+          required: true
+          type: string
+          enum:
+            - msisdn
+            - imsi
+            - iccid
+            - username
+        - name: id
+          in: path
+          description: ID of payphone to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: topUpRequest
+          in: body
+          schema:
+            $ref: '#/definitions/topUpRequest'
+          required: true
+      tags:
+        - Provision
+      responses:
+        '200':
+          description: Set Balance Amount 
+          schema:
+            $ref: '#/definitions/topupRsp'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+            
+  /ocs/provision/tariff-versions/{id}:
+    get:
+      description: Returns a Tariff Version based on ID
+      operationId: searchTariffVersionsById
+      produces:
+        - application/json
+      parameters:
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: id
+          in: path
+          description: Value of Tariff versions  field to fetch
+          required: true
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        '200':
+          description: Tariff version information
+          schema:
+            $ref: '#/definitions/tariff-versions'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+            
+  /ocs/provision/payphone-services/{id}/status:
+   put:
+      description: Disable a payphone service based on payphone_id
+      operationId: disablePayphoneServiceById
+      parameters:
+        - name: id
+          in: path
+          description: ID of payphone service to disable
+          required: true
+          type: integer
+          format: int64
+          default: 0
+        - name: umUserHash
+          in: header
+          description: 'Userhash, as returned by the User Management system.'
+          type: string
+          required: true
+        - name: umSessionID
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: umDomain
+          in: header
+          type: string
+          description: Domain of the user.
+          required: true
+        - name: payphoneStatus
+          in: body
+          schema:
+            $ref: '#/definitions/status'
+          required: true
+      tags:
+        - Provision
+      responses:
+        '204':
+          description: payphone disable
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+    

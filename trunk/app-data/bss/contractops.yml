@@ -1,0 +1,1480 @@
+# Example YAML to get you started quickly.
+# Be aware that YAML has indentation based scoping.
+# Code completion support is available so start typing for available options.
+swagger: '2.0'
+
+# This is your document metadata
+info:
+  version: '1.0.0'
+  title: Business Support System API
+  description: Specification of REST API for Business Support System
+  contact:
+    name: Emerge team
+    email: jorge.patrao@smarttank-solutions.com
+    url: https://www.linkedin.com/company/smart-tank
+host: bss.emerge.com
+basePath: /bss/v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+
+definitions:
+  contract_template:
+    type: object
+    required:
+      - id
+      - name
+      - description
+      - creation_date
+      - content
+    properties:
+      name:
+        type: string
+        description: name of the contract template
+      description:
+        type: string
+        description: description of the contract template
+      id:
+        type: number
+        format: int64
+        description: contract template ID, managed by the server. Ignored on DELETE, PUT and POST messages.
+      creation_date:
+        type: string
+        format: date-time
+        description: Date when the contract was created
+      modification_date:
+        type: string
+        format: date-time
+        description: Date when the contract was modified
+      content:
+        type: string
+        description: Contract template contents
+
+  contract_postpaid:
+    type: object
+    required:
+      - customer_id
+      - start_date
+      - billing_period
+      - billing_day
+      - allow_joint_billing
+      - content
+    properties:
+      contract_id:
+        type: number
+        format: int64
+        description: Contract Id
+      start_date:
+        type: string
+        format: date-time
+        description: Date when the contract effectively starts producing effect
+      end_date:
+        type: string
+        format: date-time
+        description: Date when the contract effectively stops producing effect
+      automatic_renewal:
+        type: boolean
+        default: true
+        description: The contract will automatically renew when End Date is reached
+      customer_id:
+        type: number
+        format: long
+        description: customer_id is the secondContractor. The system will retrieve the necessary information
+      content:
+        type: string
+        description: Contract contents
+      contract_subtype:
+        type: string
+        enum:
+          - supplement
+          - main
+      status:
+        type: string
+        enum:
+          - new
+          - pending
+          - active
+          - inactive
+          - cancelled
+          - expired
+          - closed
+      allow_joint_billing:
+        type: boolean
+        description: allow this contract to be billed together with other contracts with the same billing cycle
+      billing_period:
+        description: billing periodicity
+        type: string
+        enum:
+          - monthly
+          - bimonthly
+          - quarterly
+          - semianually
+          - anually
+      billing_day:
+        type: number
+        format: int32
+        description: day of the month when billing should take place
+      services:
+        type: array
+        items:
+          $ref: "#/definitions/product_postpaid"
+        description: ID of the services associated with contract. If it is a prepaid contract, the IDs refer to TEC, TELO or PSP services, and there will be only ONE object on the array
+      creation_date:
+        type: string
+        format: date-time
+        description: Date when the contract was created
+      modification_date:
+        type: string
+        format: date-time
+        description: Date when the contract was modified
+      status_date:
+        type: string
+        description: date of status
+      product_prepaid:
+        type: array
+        items:
+          type: number
+        description: Array of Postpaid product IDs (refers to product_postpaid object)
+
+  contract_prepaid:
+    type: object
+    required:
+      - customer_id
+      - start_date
+      - content
+    properties:
+      contract_id:
+        type: string
+        description: Contract Id
+      start_date:
+        type: string
+        format: date-time
+        description: Date when the contract effectively starts producing effect
+      end_date:
+        type: string
+        format: date-time
+        description: Date when the contract effectively stops producing effect
+      automatic_renewal:
+        type: boolean
+        default: true
+        description: The contract will automatically renew when End Date is reached
+      customer_id:
+        type: number
+        format: long
+        description: customer_id is the secondContractor. The system will retrieve the necessary information
+      contract_subtype:
+        type: string
+        enum:
+          - supplement
+          - main
+      status:
+        type: string
+        enum:
+          - new
+          - active
+          - closed
+      content:
+        type: string
+        description: Contract contents
+      service_prepaid:
+        type: number
+        description: Prepaid service Id (refers to service_prepaid object)
+
+  product:
+    type: object
+    required:
+      - product_id
+      - product_code
+      - product_description
+      - tax_description
+      - tax_percentage
+      - tax_id
+    properties:
+      product_id:
+        type: string
+      product_code:
+        type: string
+        description: Product Code
+      product_description:
+        type: string
+        description: Product Description
+      tax_id:
+        type: string
+        description: Tax ID
+      tax_description:
+        type: string
+        description: Tax description
+      tax_percentage:
+        type: number
+        format: float
+        description: Tax percentage
+
+  product_postpaid:
+    type: object
+    required:
+      - product
+      - unitPrice
+    properties:
+      product:
+        $ref: "#/definitions/product"
+      unitPrice:
+        type: number
+        format: float
+
+  service_prepaid:
+    type: object
+    required:
+      - external_provision_id
+      - external_provision_system
+      - status
+      - name
+      - service_type
+      - service_id
+      - product
+    properties:
+      service_id:
+        type: string
+      external_provision_id:
+        type: string
+      external_provision_system:
+        type: string
+        enum:
+          - TMS
+          - DRM
+      status:
+        type: string
+        enum:
+          - ready
+          - active
+          - deleted
+      name:
+        type: string
+      deleted_reason:
+        type: string
+      service_type:
+        type: string
+        enum:
+          - PSP
+          - TEC
+          - AGENT
+          - JEMBI
+          - PAYPHONE
+      product:
+        $ref: "#/definitions/product"
+
+  error_model:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: number
+        format: int32
+      message:
+        type: string
+
+# Describe your paths here
+paths:
+
+  /bss/provision/contracts/templates/:
+    post:
+      description: create a new contract template
+      operationId: createContractTemplate
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: contract
+          in: body
+          description: contract template information
+          schema:
+            $ref: "#/definitions/contract_template"
+          required: true
+      tags:
+        - Provisioning
+      responses:
+        '200':
+          description: New contract template created
+          schema:
+            type: string
+            description: ID of the created contract
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    get:
+      description: |
+        Gets `contract template` objects.
+        Optional pagination parameters - offset, and limit to determine the number of records to fetch
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: number
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: number
+          format: int64
+          minimum: 10
+          required: true
+        - name: template_name
+          type: string
+          in: query
+          description: Name of the contract template
+        - name: template_description
+          type: string
+          in: query
+          description: Description of the contract template
+        - name: createdBy
+          type: string
+          in: query
+          description: Backoffice username who created the template
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of contract that match the search criteria
+          schema:
+            title: CollectionOfContracts
+            type: array
+            items:
+              $ref: '#/definitions/contract_template'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/contracts/templates/{id}:
+    put:
+      description: Update an existing contract template
+      operationId: updateContractTemplate
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: id
+          in: path
+          type: number
+          format: int64
+          description: Id of contract to update
+          required: true
+        - name: contract
+          in: body
+          description: contract template information
+          schema:
+            $ref: "#/definitions/contract_template"
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Contract template edited
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    delete:
+      description: Delete a contract template
+      operationId: deleteContractTemplate
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: id
+          in: path
+          type: number
+          format: long
+          description: contract template id to delete
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: contract deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+
+  /bss/provision/customers/{customer_id}/contracts/prepaid:
+    post:
+      description: create a new contract for a customer
+      operationId: createContractPrepaid
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: customer id
+          required: true
+        - name: contract
+          in: body
+          description: contract information
+          schema:
+            $ref: "#/definitions/contract_prepaid"
+          required: true
+      tags:
+        - Provisioning
+      responses:
+        '200':
+          description: New contract created
+          schema:
+            type: string
+            description: Created contract ID
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Gets contracts for a specific customer
+        Optional pagination parameters - offset, limits determine the size of the fetch bucket
+      # This is array of GET operation parameters:
+      parameters:
+        # An example parameter that is in query and is required
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: number
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: number
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: Id of customer whose contract to fetch
+          required: true
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of contract that match the search criteria
+          schema:
+            title: CollectionOfContracts
+            type: array
+            items:
+              $ref: '#/definitions/contract_prepaid'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/customers/{customer_id}/contracts/prepaid/{contract_id}:
+    put:
+      description: Update an existing contract
+      operationId: updatePrepaidContract
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: Id of customer to update
+          required: true
+        - name: contract_id
+          in: path
+          type: number
+          format: int64
+          description: Id of contract to update
+          required: true
+        - name: contract
+          in: body
+          description: contract information
+          schema:
+            $ref: "#/definitions/contract_prepaid"
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Existing contract details edited
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Gets contracts for a specific customer
+        Optional pagination parameters - offset, limits determine the size of the fetch bucket
+      # This is array of GET operation parameters:
+      parameters:
+        # An example parameter that is in query and is required
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: number
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: number
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: Id of customer to fetch
+          required: true
+        - name: contract_id
+          in: path
+          type: number
+          format: int64
+          description: Id of contract to fetch
+          required: true
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of contract that match the search criteria
+          schema:
+            title: CollectionOfContracts
+            type: array
+            items:
+              $ref: '#/definitions/contract_prepaid'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    delete:
+      description: (also deletes all related services)
+      operationId: deletePrepaidContract
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: contract_id
+          in: path
+          type: number
+          format: int64
+          description: contract id to delete
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: Id of customer to fetch
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: contract deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/customers/{customer_id}/contracts/{id}/confirm:
+    put:
+      description: Confirm a contract, changes a contract from the new state -> pending
+      operationId: confirmPostpaidContract
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: Id of contract to confirm
+          required: true
+        - name: id
+          in: path
+          type: number
+          format: int64
+          description: Id of contract to confirm
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: New contract details confirmed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+            
+            
+  /bss/provision/customers/{customer_id}/contracts/{id}/cancel:
+    put:
+      description: Cancel a contract, changes a contract from the Active state -> Closed
+      operationId: cancelContract
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          default: 0
+          description: Id of contract to cancel
+          required: true
+        - name: id
+          in: path
+          type: number
+          format: int64
+          default: 0
+          description: Id of contract to cancel
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Contract details canceled
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+            
+
+
+  /bss/provision/customers/{customer_id}/contracts/postpaid:
+    post:
+      description: create a new contract for a customer
+      operationId: createPostpaidContract
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: long
+          description: customer id
+          required: true
+        - name: contract
+          in: body
+          description: contract information
+          schema:
+            $ref: "#/definitions/contract_postpaid"
+          required: true
+      tags:
+        - Provisioning
+      responses:
+        '200':
+          description: New contract created
+          schema:
+            type: string
+            description: Created contract ID
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Gets contracts for a specific customer
+        Optional pagination parameters - offset, limits determine the size of the fetch bucket
+      # This is array of GET operation parameters:
+      parameters:
+        # An example parameter that is in query and is required
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: number
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: number
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: Id of customer whose contract to fetch
+          required: true
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of contract that match the search criteria
+          schema:
+            title: CollectionOfContracts
+            type: array
+            items:
+              $ref: '#/definitions/contract_postpaid'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/customers/{customer_id}/contracts/postpaid/{id}:
+    put:
+      description: Update an existing contract
+      operationId: updatePostpaidContract
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: Id of customer to update
+          required: true
+        - name: id
+          in: path
+          type: number
+          format: int64
+          description: Id of contract to update
+          required: true
+        - name: contract
+          in: body
+          description: contract information
+          schema:
+            $ref: "#/definitions/contract_postpaid"
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Existing contract details edited
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    delete:
+      description: (also deletes all related services)
+      operationId: deletePostpaidContract
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: long
+          description: contract id to delete
+          required: true
+        - name: id
+          in: path
+          type: number
+          format: long
+          description: contract id to delete
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: contract deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/services/prepaid:
+    post:
+      description: create a new prepaid service
+      operationId: createPrepaidService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: PrepaidService
+          in: body
+          description: prepaidservice
+          schema:
+            $ref: "#/definitions/service_prepaid"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New prepaid service created
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    get:
+      description: |
+        Gets `Prepaid Service` objects.
+        Optional pagination parameters - offset, and limit to determine the number of records to fetch
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: number
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: number
+          format: int64
+          minimum: 10
+          required: true
+        - name: type
+          in: query
+          description: Prepaid service type
+          type: string
+        - name: status
+          in: query
+          description: Prepaid service status
+          type: string
+        - name: creation_date
+          in: query
+          description: Prepaid service creation date
+          type: string
+          format: date
+        - name: modification_date
+          in: query
+          description: Prepaid Service modification date
+          type: string
+          format: date
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of contract that match the search criteria
+          schema:
+            title: CollectionOfPrepaid Services
+            type: array
+            items:
+              $ref: '#/definitions/service_prepaid'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+  /bss/provision/services/prepaid/{id}:
+    get:
+      description: |
+        Gets prepaid services.
+        Optional pagination parameters - offset, and limit to determine the number of records to
+
+      operationId: getPrepaidService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: id
+          in: path
+          description: Prepaid service ID to fetch
+          type: number
+          format: int64
+          minimum: 10
+          required: true
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Prepaid service
+          schema:
+            $ref: '#/definitions/service_prepaid'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    put:
+      description: Update a prepaidservice
+      operationId: updatePrepaidService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: id
+          in: path
+          description: contract_id of the prepaid service to fetch
+          type: number
+          format: int64
+          minimum: 10
+          required: true
+        - name: contract
+          in: body
+          description: PrepaidService information
+          schema:
+            $ref: "#/definitions/service_prepaid"
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Prepaid service information edited
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+    delete:
+      description: Delete a prepaidservice
+      operationId: deletePrepaidService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: id
+          in: path
+          type: number
+          format: long
+          description: Postpaid Service id to delete
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Prepaid Service deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+  /bss/provision/products/postpaid:
+    post:
+      description: create a new postpaid product
+      operationId: createPostpaidService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: postpaid_service
+          in: body
+          description: postpaidservice
+          schema:
+            $ref: "#/definitions/product_postpaid"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New postpaid service created
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+  /bss/provision/customers/{customer_id}/contracts/{contract_id}/products:
+    get:
+      description: |
+        Gets postpaid products associated with a contract.
+        Optional pagination parameters - offset, and limit to determine the number of records to
+
+      operationId: getPostpaidProducts
+      produces:
+        - application/json
+      consumes:
+        - application/json
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: number
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: number
+          format: int64
+          minimum: 10
+          required: true
+        - name: customer_id
+          in: path
+          description: Customer id of the postpaid service to fetch
+          type: number
+          format: int64
+          required: true
+        - name: contract_id
+          in: path
+          description: contract_id of the postpaid service to fetch
+          type: number
+          format: int64
+          required: true
+        - name: Postpaid service
+          type: string
+          in: query
+          description: Prepaid Services
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of postpaid services that match the search criteria
+          schema:
+            title: CollectionOfPostpaidServices
+            type: array
+            items:
+              $ref: '#/definitions/product_postpaid'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/products/postpaid/{id}:
+    put:
+      description: Update a postpaid product
+      operationId: updatePostpaidProduct
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: id
+          in: path
+          description: Product ID of the postpaid product to update
+          type: number
+          format: int64
+          minimum: 10
+          required: true
+        - name: service
+          in: body
+          description: Postpaid product information
+          schema:
+            $ref: "#/definitions/product_postpaid"
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Postpaid Service edited
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    delete:
+      description: Delete a postpaidservice
+      operationId: deletePostPaidService
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: Userhash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: SessionID on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: id
+          in: path
+          type: number
+          format: long
+          description: Postpaid Service id to delete
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Postpaid Service deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_model'

@@ -1,0 +1,86 @@
+<app-backoffice-links></app-backoffice-links>
+
+
+<div class="main-content-body">
+  <md-card>
+    <md-card-subtitle class="md-card-subtitle main-content-title">
+      <h1>{{'CUSTOMER_INFORMATION' | translate}}</h1>
+
+    </md-card-subtitle>
+    <md-card-content>
+      <div>
+        <form class="row" (submit)="create()">
+          <div class="sub-form">
+            <div class="md-padding flex">
+              <md-input name="prepaidContract.serviceType" ng2-auto-complete [source]="prepaidData" [(ngModel)]="service" [placeholder]="'SELECT_SERVICE_TYPE' | translate" value-property-name="servicePrepaidId" display-property-name="serviceType" required>
+              </md-input>
+            </div>
+
+            <md-spinner class="em-spinner small flex" color="accent" *ngIf="isLoading"></md-spinner>
+          </div>
+          <div class="sub-form">
+            <md-slide-toggle
+            [(ngModel)]="prepaidContract.automaticRenewal" name="prepaidContract.automaticRenewal">
+              {{'AUTOMATIC_RENEWAL' | translate}}</md-slide-toggle>
+          </div>
+          <div class="md-padding">
+            <textarea minlength="5" [(ngModel)]="prepaidContract.content" name="prepaidContract.content" class="full-width" [placeholder]="'CONTENT' | translate" required></textarea>
+          </div>
+          <br>
+          <div class="align right">
+            <button md-button type="button"  (click)="clear()">{{'CLEAR' | translate}}</button>
+            <button md-button class="em-primary-btn" [disabled]="isLoading || !service.serviceType || !service || !prepaidContract.content" type="submit">{{'SAVE' | translate}}</button>
+          </div>
+        </form>
+        <br>
+        <div class="no-results" *ngIf="contractData.length == 0">{{'NO_CONTRACT_RESULTS' | translate}}</div>
+        <div *ngIf="contractData.length > 0">
+          <table class="search-results">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>{{'STATUS_DATE' | translate}}</th>
+                <th>{{'START_DATE' | translate}}</th>
+                <th>{{'AUTOMATIC_RENEWAL' | translate}}</th>
+                <th>{{'SERVICE_TYPE' | translate}}</th>
+                <th>{{'STATUS' | translate}}</th>
+                <th>{{'SERVICE_PREPAID' | translate}}</th>
+                <th>{{'ACTIONS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let data of contractData; let index=index; let odd=odd; let even=even;" class="row" [ngClass]="{ odd: odd, even: even }">
+                <td>{{data.contractId}}</td>
+                <td>{{data.statusDate}}</td>
+                <td>{{data.startDate}}</td>
+                <td><span class='em-status-text'>{{(data.automaticRenewal ? 'YES' : 'NO') | translate}}</span></td>
+                <td>{{data.serviceType}}</td>
+                <td><span class='em-status-text'>{{data.status | translate}}</span></td>
+                <td><a routerLink="/backoffice/service/prepaid/view/{{data.servicePrepaid}}">{{data.servicePrepaid}}</a></td>
+                <td>
+                  <a *ngIf="data.status === 'ACTIVE'" (click)="close(data.servicePrepaid,data.contractId, index)">
+                    <md-icon>close</md-icon>
+                  </a>
+                  <a routerLink="/backoffice/customers/{{data.customerId}}/prepaid-contract/{{data.contractId}}/view">
+                    <md-icon>remove_red_eye</md-icon>
+                  </a>
+                    <div *ngIf="data.status === 'NEW'">
+                      <a (click)="confirm(data)" [title]="'CONFIRM_CONTRACT' | translate">
+                        <button type="button" color="accent" md-icon-button><md-icon>check</md-icon></button>
+                      </a>
+                    </div>
+                  <!-- <div *ngIf="data.status !== 'NEW'" >
+                    <a routerLink="/backoffice/customers/{{data.customerId}}/prepaid-contract/{{data.contractId}}/create">
+    									<md-icon title="{{'CREATE_SUPPLEMENT_CONTRACT' | translate}}">plus</md-icon>
+    								</a>
+                  </div> -->
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <app-confirm-dialog #confirmDialog></app-confirm-dialog>
+    </md-card-content>
+  </md-card>
+</div>

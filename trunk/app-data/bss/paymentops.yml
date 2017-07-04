@@ -1,0 +1,1971 @@
+# Example YAML to get you started quickly.
+# Be aware that YAML has indentation based scoping.
+# Code completion support is available so start typing for available options.
+swagger: '2.0'
+
+# This is your document metadata
+info:
+  version: '1.0.0'
+  title: Business Support System API
+  description: Specification of REST API for Business Support System
+  contact:
+    name: Emerge team
+    email: jorge.patrao@smarttank-solutions.com
+    url: https://www.linkedin.com/company/smart-tank
+host: bss.emerge.com
+basePath: /bss/v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+
+definitions:
+
+  tax_type:
+    type: object
+    required:
+      - tax_code
+      - description
+      - percentage
+    properties:
+      tax_type_id:
+        type: number
+        format: int64
+        default: 0
+      tax_code:
+        type: string
+      description:
+        type: string
+      percentage:
+        type: number
+        format: decimal
+      start_date:
+        type: string
+        format: date-time
+        description: Date when the tax type is active
+      end_date:
+        type: string
+        format: date-time
+        description: Date when the tax type is active
+
+  telo_agents:
+    type: object
+    required:
+      - prepaid_service_id
+      - balance
+    properties:
+      prepaid_service_id:
+        type: number
+        format: int64
+        default: 0
+      balance:
+        type: number
+        format: decimal
+
+  telo_agent_profit_config:
+    type: object
+    required:
+      - end_amount
+      - profit_percentage
+      - telo_agent_id
+    properties:
+      end_amount:
+        type: number
+        format: decimal
+      profit_percentage:
+        type: number
+        format: decimal
+      telo_agent_id:
+        type: string
+
+  telo_operator_profit_config:
+    type: object
+    required:
+      - end_amount
+      - profit_percentage
+      - customer_id
+    properties:
+      end_amount:
+        type: number
+        format: decimal
+      profit_percentage:
+        type: number
+        format: decimal
+      customer_id:
+        type: number
+        format: int64
+        default: 0
+
+  payment:
+    type: object
+    properties:
+      payment_id:
+        type: number
+        format: int64
+        default: 0
+      payent_amount:
+        type: string
+      payment_date:
+        type: string
+        format: date-time
+      customer_id:
+        type: number
+        format: int64
+        default: 0
+      reconciled:
+        type: string
+        enum:
+          - Yes
+          - No
+      reconciled_method:
+        type: string
+        enum:
+          - Manual
+          - Automatic
+      invoice_id:
+        type: number
+        format: int64
+        default: 0
+      provisioned_equipment:
+        type: string
+        enum:
+          - TEC
+          - PSP
+          - Payphone
+      payment_reference_number:
+        type: string
+      credit_before_payment:
+        type: string
+      credit_after_payment:
+        type: string
+      name_of_back_office_operator:
+        type: string
+      revoked:
+        type: string
+        enum:
+          - Yes
+          - No
+      note:
+        type: string
+      payment_method:
+        type: string
+        enum:
+          - EMIS
+          - Cheque
+          - Cash
+          - SEPA
+          - Bordereau
+          - Bank Wire Transfer
+          - Finance Discount
+          - Reconciliation of Accounts
+          - Postal Receipts to Collection
+          - Intenal Wallets
+      payment_status:
+        type: string
+      electronic_ reference:
+        type: string
+      treasury_accounts:
+        type: string
+        enum:
+          - EMIS
+          - Cheque
+          - Cash
+          - SEPA
+          - Bordereau
+          - Bank Wire Transfer
+          - Finance Discount
+          - Reconciliation of Accounts
+          - Postal Receipts to Collection
+          - Intenal Wallets
+      paid_service:
+        type: string
+        enum:
+          - Prepaid
+          - Postpaid
+
+  alleged_payment:
+    type: object
+    properties:
+      payment_method:
+        type: string
+        enum:
+        - EMIS
+        - Bordereau
+        - Bank Wire Transfer
+        - Postal Receipts to Collection
+      services_to_provision:
+        type: number
+        format: int2
+
+  invoice_header:
+    type: object
+    properties:
+      company_name:
+        type: string
+      business_name:
+        type: string
+      tax_registration_number:
+        type: string
+      telephone_number:
+        type: string
+      fax:
+        type: string
+      email_address:
+        type: string
+      website:
+        type: string
+
+  invoice_customer_information:
+    type: object
+    properties:
+      customer_id:
+        type: number
+        format: int64
+        default: 0
+      account_id:
+        type: string
+      vat_number:
+        type: string
+      company_name:
+        type: string
+      billing_address:
+        type: string
+      country:
+        type: string
+      telephone_number:
+        type: string
+      fax:
+        type: string
+      email_address:
+        type: string
+      website:
+        type: string
+
+  invoice_payment_information:
+    type: object
+    description: Payment information. Only used for Postpaid contracts
+    properties:
+      emis_code:
+        type: string
+      emis_reference:
+        type: string
+      sepa_reference:
+        type: string
+      sepa_account:
+        type: string
+      sepa_bank_id:
+        type: string
+      due_date:
+        type: string
+        format: date-time
+
+  invoice_products:
+    type: object
+    properties:
+      product_code:
+        type: string
+      product_description:
+        type: string
+      quantity:
+        type: string
+      unit_price:
+        type: string
+      discount_percentage:
+        type: string
+      discount_value:
+        type: string
+      description:
+        type: string
+      amount_without_tax:
+        type: string
+      tax_type:
+        type: string
+      tax_percentage:
+        type: string
+      tax_amount:
+        type: string
+      tax_exemption_reason:
+        type: string
+
+  invoice:
+    type: object
+    required:
+      - header
+      - customer
+      - products
+    properties:
+      header:
+        $ref: "#/definitions/invoice_header"
+      customer:
+        $ref: "#/definitions/invoice_customer_information"
+      payment:
+        $ref: "#/definitions/invoice_payment_information"
+      invoice_number:
+        type: string
+      invoice_hash:
+        type: string
+      invoice_hash_control:
+        type: string
+      invoice_type:
+        type: string
+      invoice_date:
+        type: string
+        format: date-time
+      invoice_period:
+        type: string
+      credit_note_id:
+        type: string
+        description: ID of credit note related to this invoice (if any)
+      contractId:
+        type: number
+        format: int64
+        default: 0
+        description: ID of contract related to this invoice (if any)
+      contractType:
+        type: string
+        description: Prepaid or Postpaid
+        enum:
+          - PREPAID
+          - POSTPAID
+      products:
+        type: array
+        items:
+          $ref: "#/definitions/invoice_products"
+      tax_payables:
+        type: number
+        format: decimal
+      net total:
+        type: number
+        format: decimal
+      gross_total:
+        type: number
+        format: decimal
+      notes:
+        type: string
+
+  receipt:
+    type: object
+    required:
+      - header
+      - customer
+      - products
+    properties:
+      header:
+        $ref: "#/definitions/invoice_header"
+      customer:
+        $ref: "#/definitions/invoice_customer_information"
+      products:
+        type: array
+        items:
+          $ref: "#/definitions/invoice_products"
+      invoice_number:
+        type: string
+      receipt_number:
+        type: string
+      receipt_date:
+        type: string
+        format: date-time
+      tax_payables:
+        type: number
+        format: decimal
+      net_total:
+        type: number
+        format: decimal
+      gross_total:
+        type: number
+        format: decimal
+      notes:
+        type: string
+
+  credit_note:
+    type: object
+    required:
+      - header
+      - customer
+      - products
+    properties:
+      header:
+        $ref: "#/definitions/invoice_header"
+      customer:
+        $ref: "#/definitions/invoice_customer_information"
+      products:
+        type: array
+        items:
+          $ref: "#/definitions/invoice_products"
+      credit_note_number:
+        type: string
+      invoice_number:
+        type: string
+
+  error_model:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+        default: 0
+      message:
+        type: string
+
+# Describe your paths here
+paths:
+
+  /bss/provision/invoices:
+    get:
+      description: |
+        Gets prepaid services.
+        Optional pagination parameters - offset, and limit to determine the number of records to
+
+      operationId: getInvoices
+      produces:
+        - application/json
+      consumes:
+        - application/json
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_name
+          in: query
+          description: Customer name to whom of the invoices belong to
+          type: string
+        - name: customer_id
+          in: query
+          description: Customer Id to whom of the invoices belong to
+          type: number
+          format: int64
+          default: 0
+        - name: customer_fiscal_number
+          in: query
+          description: Customer fiscal number to whom of the invoices belong to
+          type: string
+        - name: customerContact
+          in: query
+          description: Customer contact to whom of the invoices belong to. Will search all phone and fax contacts
+          type: string
+        - name: customer_email
+          in: query
+          description: Customer email to whom of the invoices belong to
+          type: string
+        - name: customer_username
+          in: query
+          description: Customer username to whom of the invoices belong to
+          type: string
+        - name: payment_id
+          in: query
+          description: Payment for this invoice
+          type: number
+          format: int64
+          default: 0
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of Invoices that match the search criteria
+          schema:
+            title: Collection of Invoices
+            type: array
+            items:
+              $ref: '#/definitions/invoice'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    post:
+      description: create a new invoice for a payment
+      operationId: createInvoice
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: create_invoice
+          in: body
+          description: Customer invoice information
+          schema:
+            $ref: "#/definitions/invoice"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New invoice created
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/invoices/{invoice_number}:
+    get:
+      description: |
+        Gets prepaid services.
+        Optional pagination parameters - offset, and limit to determine the number of records to
+
+      operationId: getInvoiceByInvoiceNumber
+      produces:
+        - application/json
+      consumes:
+        - application/json
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: invoice_number
+          in: path
+          description: invoice_number of the invoice to fetch
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Invoice
+          schema:
+            $ref: '#/definitions/invoice'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/tax-types:
+    post:
+      description: create a new tax type
+      operationId: createTaxType
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: tax_type
+          in: body
+          description: Tax type information
+          schema:
+            $ref: "#/definitions/tax_type"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New customer created
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    get:
+      description: Returns a list of tax types that match the search criteria. If multiple criteria are specified, the result will be a list of all customers that match all the criteria (logical AND)
+      operationId: searchTaxType
+      produces:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          maximum: 100
+        - name: description
+          in: query
+          description: tax type description
+          type: string
+        - name: percentage
+          in: query
+          description: percentage of the particular tax_type
+          type: number
+          format: decimal
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of tax types that match the search criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/tax_type'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/tax-types/{tax_type_id}:
+    delete:
+      description: delete a tax_type on the bss
+      operationId: deleteTaxType
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: tax_type_id
+          in: path
+          type: number
+          format: int64
+          default: 0
+          description: tax type id to delete
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: tax type deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+    put:
+      description: edit an existing customer on the bss
+      operationId: updateTaxType
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: tax_type_id
+          in: path
+          type: number
+          format: int64
+          default: 0
+          description: tax type id to edit/update
+          required: true
+        - name: tax_type
+          in: body
+          description: Customer information
+          schema:
+            $ref: "#/definitions/tax_type"
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: Existing customer details edited
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/telo-agents:
+    post:
+      description: Create a new telo agent
+      operationId: createTeloAgent
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New telo agent created
+          schema:
+            $ref: "#/definitions/telo_agents"
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/telo-agents/{telo_agent_id}:
+    delete:
+      description: delete a telo agent
+      operationId: deleteTeloAgent
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: telo_agent_id
+          in: path
+          type: number
+          format: int64
+          default: 0
+          description: tax type id to delete
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: tax type deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+  /bss/provision/telo-agents/{telo_agent_id}/set-balance:
+    put:
+      description: Set balance of a telo agent
+      operationId: setTeloAgentBalance
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: telo_agent_id
+          in: path
+          type: number
+          format: int64
+          default: 0
+          description: Telo Agent id to edit/update
+          required: true
+        - name: newBalance
+          in: header
+          type: string
+          description: Telo Agent id to edit/update
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: Existing telo agent details updated
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/telo-agents/{telo_agent_id}/topup:
+    put:
+      description: Topup a telo agent
+      operationId: topupTeloAgentBalance
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: telo_agent_id
+          in: path
+          type: number
+          format: int64
+          default: 0
+          description: Telo Agent id to edit/update
+          required: true
+        - name: topup_value
+          in: header
+          type: string
+          description: Value to add to Balance
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: Existing telo agent details updated
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/payments:
+    post:
+      description: Keeps payment information
+      operationId: createPayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: Payment record
+          in: body
+          description: Payment information
+          schema:
+            $ref: "#/definitions/payment"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: Payment record created
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    get:
+      description: |
+        Gets prepaid services.
+        Optional pagination parameters - offset, and limit to determine the number of records to fetch
+
+      operationId: searchPayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: begin_date
+          in: query
+          description: Begin date
+          type: string
+          format: date-time
+          required: true
+        - name: end_date
+          in: query
+          description: End date
+          type: string
+          format: date-time
+          required: true
+        - name: customer_id
+          in: query
+          description: Customer Id
+          type: string
+        - name: customer_name
+          in: query
+          description: Customer Id
+          type: number
+          format: int64
+        - name: customer_fiscal_number
+          in: query
+          description: Customer fiscal number
+          type: string
+        - name: customer_phone_number
+          in: query
+          description: Customer phone number
+          type: string
+        - name: customer_email
+          in: query
+          description: Customer email
+          type: string
+        - name: customer_username
+          in: query
+          description: Customer Username
+          type: string
+        - name: invoice_number
+          in: query
+          description: Invoice number
+          type: string
+        - name: payment_method
+          in: query
+          description: Payment method
+          type: string
+          enum:
+            - Insert
+            - payment
+            - methods
+        - name: payment_reference
+          in: query
+          description: Payment reference
+          type: string
+        - name: payment_status
+          in: query
+          description: Payment status
+          type: string
+          enum:
+            - Insert
+            - payment
+            - status
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of payment Invoices that match the search criteria
+          schema:
+            title: Collection of Payment Invoices
+            type: array
+            items:
+              $ref: '#/definitions/payment'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/payments/{payment_id}:
+
+    put:
+      description: Update a generated payment
+      operationId: updatePayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: payment_id
+          in: path
+          description: payment_id of the payment invoice to update
+          type: number
+          format: int64
+          required: true
+        - name: Payment
+          in: body
+          description: Update payment information
+          schema:
+            $ref: "#/definitions/payment"
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Invoice information edited
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    get:
+      description: Get payment
+      operationId: getPayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: payment_id
+          in: path
+          description: payment_id of the payment to fetch
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Payment
+          schema:
+              $ref: '#/definitions/payment'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    delete:
+      description: Delete a payment
+      operationId: deletePayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: payment_id
+          in: path
+          type: number
+          format: int64
+          description: payment id to delete
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Customer Payment Invoice deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/payments/{payment_id}/receipt:
+    get:
+      description: Issue receipt for a payment
+      operationId: getPaymentReceipt
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: payment_id
+          in: path
+          description: payment_id of the payment invoice to update
+          type: number
+          format: int64
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Invoice information edited
+          schema:
+            $ref: "#/definitions/receipt"
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/payments/{payment_id}/revoke:
+    put:
+      description: Revoke a payment
+      operationId: revokePayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: payment_id
+          in: path
+          description: payment_id of the payment invoice to update
+          type: number
+          format: int64
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Invoice information edited
+          schema:
+            $ref: "#/definitions/credit_note"
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/credit_notes/{payment_id}/{customer_id}/{invoice_number}:
+    get:
+      description: |
+        Gets credit note.
+        Optional pagination parameters - offset, and limit to determine the number of records to
+
+      operationId: getCreditNote
+      produces:
+        - application/json
+      consumes:
+        - application/json
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: customer_id
+          in: path
+          description: customer_id of the credit_note to fetch
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: payment_id
+          in: path
+          description: payment_id of the credit_note to fetch
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: invoice_number
+          in: path
+          description: invoice_number of the credit_note to fetch
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: credit_note
+          type: string
+          in: query
+          description: credit_note management
+        - name: credit_noteDescription
+          type: string
+          in: query
+          description: Description of credit_note management
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of credit_notes that match the search criteria
+          schema:
+            title: Collection of credit_notes
+            type: array
+            items:
+              $ref: '#/definitions/credit_note'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+
+  /bss/provision/telo-agent-profit-config:
+    post:
+      description: Manage profit config for telo agent
+      operationId: createTeloAgentProfitConfig
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: telo_agent_profit_config
+          in: body
+          description: Telo agent profit
+          schema:
+            $ref: "#/definitions/telo_agent_profit_config"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: telo_agent_profit_configured
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+
+
+  /bss/provision/telo-agent-profit-config/{customer_id}:
+    get:
+      description: |
+        Gets telo_agent_profit_config.
+        Optional pagination parameters - offset, and limit to determine the number of records to
+
+      operationId: getTeloAgentProfitConfig
+      produces:
+        - application/json
+      consumes:
+        - application/json
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: customer_id
+          in: path
+          description: customer_id of the telo_agent_profit_config to fetch
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: telo_agent_profit
+          type: string
+          in: query
+          description: telo_agent_profit_config
+        - name: TeloAgentDescription
+          type: string
+          in: query
+          description: Description of telo_agent_profit_config management
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of telo_agent_profit_config that match the search criteria
+          schema:
+            title: Collection of telo_agent_profit_config
+            type: array
+            items:
+              $ref: '#/definitions/telo_agent_profit_config'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+  /bss/provision/telo-agent-profit-config/update/{customer_id}:
+    put:
+      description: Update profit configuration for a customer id
+      operationId: updateTeloAgentProfitConfig
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          description: customer_id of the telo_agent_profit_config to update
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: contract
+          in: body
+          description: Update telo_agent_profit_config_information
+          schema:
+            $ref: "#/definitions/telo_agent_profit_config"
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Invoice information edited
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/telo-agent-profit-config/delete/{customer_id}:
+    delete:
+      description: Delete a telo_agent_profit_config
+      operationId: deleteTeloAgentProfitConfig
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: customer id of the Telo_agent_profit_config to delete
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Telo_agent_profit_config deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+
+
+
+
+
+
+  /bss/provision/telo_operator_profit_config:
+    post:
+      description: Manage profit config for telo operator
+      operationId: createTeloOperatorProfitConfig
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: telo_agent_profit_config
+          in: body
+          description: Telo Operator Profit Configuration
+          schema:
+            $ref: "#/definitions/telo_operator_profit_config"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: telo_agent_profit_configured
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+  /bss/provision/telo-operator-profit-config/{customer_id}:
+    get:
+      description: |
+        Gets telo_operator_profit_config.
+        Optional pagination parameters - offset, and limit to determine the number of records to
+
+      operationId: getTeloOperatorProfitConfig
+      produces:
+        - application/json
+      consumes:
+        - application/json
+
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: offset
+          in: query
+          description: Page offset
+          default: 0
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          description: Page limit
+          default: 20
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: customer_id
+          in: path
+          description: customer_id of the telo_operator_profit_config to fetch
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: Telo_operator_profit_config
+          type: string
+          in: query
+          description: Telo_operator_profit_config management
+        - name: Telo_operator_profit_configDescription
+          type: string
+          in: query
+          description: Description of Telo_operator_profit_config management
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Array of Telo_operator_profit_config that match the search criteria
+          schema:
+            title: Collection of Telo_operator_profit_config
+            type: array
+            items:
+              $ref: '#/definitions/telo_operator_profit_config'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+  /bss/provision/telo-operator-profit-config/update/{customer_id}:
+    put:
+      description: Update profit configuration for a customer id
+      operationId: updateTeloOperatorProfitConfig
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          description: customer_id of the telo_operator_profit_config to update
+          type: integer
+          format: int64
+          minimum: 10
+          required: true
+        - name: contract
+          in: body
+          description: Update telo_operator_profit_config_information
+          schema:
+            $ref: "#/definitions/telo_operator_profit_config"
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Telo_operator_profit_config edited
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/telo-operator-profit-config/delete/{customer_id}:
+    delete:
+      description: Delete a telo_operator_profit_config
+      operationId: deleteTeloOperatorProfitConfig
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: customer_id
+          in: path
+          type: number
+          format: int64
+          description: customer id of the Telo_operator_profit_config to delete
+          required: true
+      tags:
+        - Operations
+      responses:
+        '204':
+          description: Telo_operator_profit_config deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+  /bss/provision/alleged_payments:
+    post:
+      description: Manage alleged payments of customers
+      operationId: createAllegedPayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: alledged_payment
+          in: body
+          description: Alleged Payment
+          schema:
+            $ref: "#/definitions/alleged_payment"
+          required: true
+      tags:
+        - Events
+      responses:
+        '200':
+          description: New alleged payment created
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+
+    get:
+      description: Returns a list of alledged payments that match the search criteria. If multiple criteria are specified, the result will be a list of all customers that match all the criteria (logical AND)
+      operationId: searchAllegedPayment
+      produces:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: payment method
+          in: query
+          type: string
+          description: payment method for the alledged payment
+        - name: service to provision
+          in: query
+          type: string
+          description: description of service the alledged payment is associated with
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: All alledged payments listed
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+  /bss/provision/alledged_payment/{alledged_payment_Id}:
+    delete:
+      description: delete an alledged payment on the bss
+      operationId: deleteAlledgedPayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: alledged_payment_Id
+          in: path
+          type: number
+          format: int64
+          description: alledged payment id to delete
+          required: true
+        - name: alledged payment
+          in: body
+          description: alledged payment information
+          schema:
+            $ref: "#/definitions/alleged_payment"
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: alledged payment deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+
+    put:
+      description: edit an existing telo agent information
+      operationId: updateAllegedPayment
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: um_user_hash
+          in: header
+          description: um_user_hash, as returned by the User Management system
+          type: string
+          required: true
+        - name: um_session_id
+          in: header
+          description: um_session_id on the User Management system
+          type: string
+          required: true
+        - name: um_domain
+          in: header
+          type: string
+          description: Domain of the user
+          required: true
+        - name: alledged_payment_Id
+          in: path
+          type: number
+          format: int64
+          description: Alledged payment id to edit/update
+          required: true
+        - name: Telo Agent
+          in: body
+          description: Alledged payment information
+          schema:
+            $ref: "#/definitions/alleged_payment"
+          required: true
+      tags:
+        - Operation
+      responses:
+        '204':
+          description: Existing telo agent details updated
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/error_model'
+

@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">TeloPay</string>
+    <string name="text_username">Utilizador</string>
+    <string name="text_password">Palavra-passe</string>
+    <string name="btn_text_login">Login</string>
+    <string name="text_config_item">Item de Configuração</string>
+    <string name="text_config_screen_tile">Configuração</string>
+    <string name="btn_text_proceed">Continuar</string>
+    <string name="text_security_screen_title">PIN de segurança</string>
+    <string name="text_home_screen_title">Home</string>
+    <string name="text_make_call">Realizar Chamada</string>
+    <string name="text_payphone_activity">Actividade do Payphone</string>
+    <string name="text_configuration">Configuração</string>
+    <string name="text_called_number">Número Chamado</string>
+    <string name="text_call_establish_screen_header">Estabelecimento da Chamada</string>
+    <string name="text_call_setup_screen_header">Preparação da Chamada</string>
+    <string name="text_spendable_amount">Montante</string>
+    <string name="text_call_setup_text">Por favor introduza o montante a gastar</string>
+    <string name="text_call_in_progress">Chamada em curso para:</string>
+    <string name="text_call_time_remaining">Tempo disponível:</string>
+    <string name="text_amount_charge">Valor cobrado:</string>
+    <string name="text_balance_remaining">Saldo remanescente:</string>
+    <string name="text_call_duration">Duração da chamada:</string>
+    <string name="text_terminate_call">Terminar Chamada</string>
+    <string name="text_make_another_call">Realizar outra chamada</string>
+    <string name="text_terminate_session">Terminar Sessão</string>
+    <string name="text_call_in_progress_screen_title">Chamada em curso</string>
+    <string name="text_establish_call_text">Por favor introduza o número a chamar</string>
+    <string name="text_prompt_pin">Por favor introduza o PIN</string>
+    <string name="text_security_prompt_screen">O PIN será solicitado sempre que uma funcionalidade protegida seja acedida</string>
+    <string-array name="configuration_options">
+        <item>Detalhes do Serviço</item>
+        <item>Detalhes do Payphone</item>
+        <item>Ocultar número chamador</item>
+        <item>Idioma</item>
+        <item>Alterar PIN</item>
+    </string-array>
+
+    <string name="text_payphone_activity_title">Actividade</string>
+    <string name="text_make_another_call_prompt">Tem %1$s Kz disponíveis na sua sessão atual. Quer realizar outra chamada?</string>
+
+</resources>

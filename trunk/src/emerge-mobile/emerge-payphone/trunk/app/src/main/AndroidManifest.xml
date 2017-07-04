@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="telopay.timwe.com.telopay">
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <receiver android:name=".telephony.CallBroadcast" >
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
+            </intent-filter>
+        </receiver>
+
+
+
+        <!--
+                <service
+                    android:name=".notifications.NotificationIntentService"
+                    android:enabled="true"
+                    androxported="false" />
+
+                <receiver android:name=".notifications.NotificationEventReceiver" />
+                <receiver android:name=".notifications.NotificationServiceStarterReceiver">
+                    <intent-filter>
+                        <action android:name="android.intent.action.BOOT_COMPLETED" />
+                        <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                        <action android:name="android.intent.action.TIME_SET" />
+                    </intent-filter>
+                </receiver>-->
+
+        <activity
+            android:name=".SplashActivity"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".LoginActivity"
+            android:theme="@style/AppThemeNoActionBar"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".SecurityPinActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".HomeActivity"
+            android:theme="@style/AppThemeNoActionBar"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".CallSetupActvity"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name=".EstablishCallActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity android:name=".CallInProgressActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".CallDetailsActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ConfigurationActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".PayphoneActivity"
+            android:screenOrientation="portrait"/>
+    </application>
+
+</manifest>

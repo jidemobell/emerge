@@ -1,0 +1,69 @@
+<app-backoffice-links></app-backoffice-links>
+<div class="main-content-body">
+  <md-card>
+    <md-card-subtitle>
+      <h1>{{'EDIT_CONTRACT_TEMPLATE' | translate }}</h1>
+    </md-card-subtitle>
+    <md-card-content>
+      <form class="row" #contractForm="ngForm" (submit)="create()">
+        <div class="row">
+          <div class="sub-form">
+              <div class="md-padding flex">
+                <inline-edit [label]="'CONTRACT_NAME' | translate"
+                [(ngModel)]='contractTemplate.name'
+                name="contractTemplate.name"
+                classNames="textfield inline-block"></inline-edit>
+              </div>
+              <div class="md-padding flex">
+                <label class="select-label display-block">{{'CONTRACT_TYPE'| translate }}</label>
+                <select name="contractTemplate.contractTYPE" [(ngModel)]="contractTemplate.contractType">
+                  <optgroup [label]="'CONTRACT_TYPE' | translate">
+                    <option *ngFor="let contractType of contractTypeEnum" [label]="contractType" [value]="contractType"
+                    [label]="contractType | translate">{{contractType | translate}}</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="md-padding flex">
+                <inline-edit [label]="'CREATED_BY' | translate"
+                [(ngModel)]='contractTemplate.createdBy'
+                name="contractTemplate.createdBy"
+                classNames="textfield inline-block" disabled>
+              </inline-edit>
+              </div>
+        </div>
+                <div class="md-padding">
+                  <md-textarea
+                  minlength="5"
+                  class="full-width"
+                  name="contractTemplate.description"
+                  [(ngModel)]= 'contractTemplate.description'
+                  placeholder="{{'DESCRIPTION' | translate}}">
+                </md-textarea>
+                </div>
+                <div class="md-padding">
+                  <md-textarea
+                  minlength="5"
+                  class="full-width"
+                  name="contractTemplate.content"
+                  [(ngModel)]= 'contractTemplate.content'
+                  placeholder="{{'CONTENT' | translate}}">
+                  </md-textarea>
+                </div>
+        </div>
+        <div class="button-toolbar em-margin-top large">
+          <div class="md-padding flex">
+            <button md-button type="button" color="warn" (click)="delete()" class="align left">{{'DELETE' | translate}}</button>
+          </div>
+          <div class="md-padding flex float-right">
+            <button md-button type="button"  (click)="cancel()">{{'CANCEL' | translate}}</button>
+          </div>
+          <div class="md-padding flex float-right">
+            <button md-button class="em-primary-btn"
+            [disabled]="isLoading"
+            type="submit">{{'UPDATE' | translate}}</button>
+        </div>
+       </div>
+      </form>
+ </md-card-content>
+  </md-card>
+</div>
